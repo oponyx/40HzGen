@@ -13,7 +13,7 @@ void setup() {
 }
 
 void loop() {
-  //Serial.println("Starting loop...");
+  Serial.println("Starting loop...");
   digitalWrite(LED_BUILTIN, LOW);   // Turn the LED on by making the voltage LOW
   delay(12);            // Wait for a second
   digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
