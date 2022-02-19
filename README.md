@@ -1,4 +1,6 @@
-# Warning!!! This device will flash the light! Don't use it near individuals with epilepsy!
+# Warning!!! 
+# This device will flash the light! 
+# Don't use it near individuals with epilepsy!
 # The research has not been tested and has not been proven to work on humans!!
 
 # 40HzGen
