@@ -11,7 +11,20 @@
 #define AP_DEFAULT_SSID "40Hz_Gen"
 #define AP_DEFAULT_PASSW "12345678"
 #define DEFAULT_LIGHT_FREQ 40
-#define DEFAULT_AUDIO_FREQ 42
+#define DEFAULT_ON_TIME 60
+
+#define MIN_LIGHT_FREQ 5
+#define MAX_LIGHT_FREQ 100
+#define MIN_ON_TIME 2
+#define MAX_ON_TIME 100
+
+
+
+// commands defines
+#define NO_COMMANDS   0x0000
+#define CMD_REBOOT    0x0001
+#define CMD_START     0x0002
+#define CMD_STOP      0x0003
 
 
 
@@ -41,7 +54,7 @@ typedef struct {
   char          ap_ssid[16];               // 0..
   char          ap_psw[16];                // 0..
   uint16_t      light_freq;                // 0..
-  uint16_t      audio_freq;                // 0..
+  uint16_t      on_time;                // 0..
 } TSettings;
 
 extern TSettings Settings;

@@ -6,5 +6,6 @@
 extern AsyncWebServer web_server;
 void web_serv_setup();
 String processor(const String& var);
+String status_req_handler();
 
 #endif

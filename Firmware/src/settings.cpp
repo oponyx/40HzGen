@@ -37,7 +37,7 @@ uint8_t restoreDefaultSettings(){
 //  ((String)AP_DEFAULT_PASSW).toCharArray(Settings.ap_psw,sizeof(AP_DEFAULT_PASSW));
   strcpy(Settings.ap_psw, AP_DEFAULT_PASSW);
   Settings.light_freq = DEFAULT_LIGHT_FREQ;
-  Settings.audio_freq = DEFAULT_AUDIO_FREQ;
+  Settings.on_time = DEFAULT_ON_TIME;
 
   SettingsWrite();
   return 0;

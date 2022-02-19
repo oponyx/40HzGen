@@ -25,6 +25,8 @@ extern Adafruit_SSD1306 display;
 
 
 void display_init() ;
-
+void dispWorkingPage();
+void dispReadyPage();
+void dispInfoPage();
 
 #endif // _GRAPHIC_H_

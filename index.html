@@ -1,0 +1,174 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta charset=utf-8>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      body {
+        text-align: center;
+        font-family: verdana,sans-serif;
+        background: #252525;
+      }
+      html {
+        font-family: Arial;
+        display: inline-block;
+        margin: 0px auto;
+        text-align: center;
+        color: azure;
+      }
+      h2 { font-size: 3.0rem; }
+      p { font-size: 2.0rem; }
+      button {
+        border: 0;
+        border-radius: 0.3rem;
+        background: #1fa3ec;
+        width: 100%;
+        color: #faffff;
+        line-height: 2.4rem;
+        font-size: 1.2rem;
+        transition-duration: 0.4s;
+        cursor: pointer;
+      }
+      .units { font-size: 1.0rem; }
+      .param-labels{
+        font-size: 1.0rem;
+        vertical-align:middle;
+        padding-bottom: 15px;
+      }
+      button[disabled]:active, button[disabled],
+      input[type="button"][disabled]:active,
+      input[type="button"][disabled],
+      input[type="submit"][disabled]:active,
+      input[type="submit"][disabled] ,
+      button[disabled]:hover,
+      input[type="button"][disabled]:hover,
+      input[type="submit"][disabled]:hover
+      {
+        border: 2px outset ButtonFace;
+        color: GrayText;
+        cursor: inherit;
+        background-color: #ddd;
+        background: #ddd;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>40Hz Generator</h2>
+    <div>
+      <table style="width: 100%"><tbody>
+        <tr>
+          <td style="width: 10%"></td>     
+          <td  style="width: 40%">     
+            <button id="BUTT_START" onclick="start()" class="button" style="background: #f50404; width: 100%">Start</Button>
+          </td>
+          <td style="width: 40%">     
+            <button id="BUTT_STOP" onclick="stop()" class="button" style="background: #03df28;width: 100%">Stop</Button>
+          </td>
+          <td style="width: 10%"></td>     
+        </tr>
+      </tbody></table>
+    </div>  
+    <div row>
+      <div col><p>Status</p></div>
+    </div>  
+
+    <table style="width: 100%">
+      <tbody></tbody>
+        <tr>
+          <td>     
+            <span class="param-labels">Lamp Status:</span> 
+            <span id="LAMP_STATUS">Waiting..</span>
+        </td>
+        <td>
+            <span class="param-labels">Audio Status:</span> 
+          <span id="AUDIO_STATUS">Waiting..</span>
+        </td>
+        <td>
+          <span class="param-labels">Frequence:</span> 
+          <span id="LIGHT_FREQ">Waiting..</span><span class="units">Hz</span>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="param-labels">Remaining Time:</span> 
+          <span id="REM_TIME">Waiting..</span><span class="units">Min</span>
+        </td>
+        <td>
+          <span class="param-labels">WIFI SSID:</span> 
+          <span id="WIFI_SSID">Waiting..</span>
+        </td>
+        <td>
+          <span class="param-labels">Free Heap:</span> 
+          <span id="FREE_HEAP">Waiting..</span>
+        </td>
+      </tr>  
+    </tbody></table>
+    <table style="width: 100%"><tbody>
+      <tr>
+        <td style="width: 10%"></td>
+        <td  style="width: 80%">     
+          <p><form id=but1 style="display: block;" action='/settings' method='get'><button>Settings</button></form>
+        </td>
+        <td style="width: 10%"></td>
+      </tr>
+    </tbody></table>
+    <script>
+    function start(){
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          // get json data
+          //json_msg=data;
+          console.log("Received data:" + this.responseText);
+          var json_msg = JSON.parse(this.responseText);
+          if(json_msg.result=="OK"){
+            document.getElementById("BUTT_START").disabled=true;
+            document.getElementById("BUTT_STOP").disabled=false;
+          }
+        }
+      };
+      xhttp.open("GET", "/start", true);
+      xhttp.send();
+    }
+
+    function stop(){
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          // get json data
+          //json_msg=data;
+          console.log("Received data:" + this.responseText);
+          var json_msg = JSON.parse(this.responseText);
+          if(json_msg.result=="OK"){
+            document.getElementById("BUTT_START").disabled=false;
+            document.getElementById("BUTT_STOP").disabled=true;
+          }
+        }
+      };
+      xhttp.open("GET", "/stop", true);
+      xhttp.send();
+    }
+
+    setInterval(function ( ) {
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          // get json data
+          //json_msg=data;
+          console.log("Received data:" + this.responseText);
+          var json_msg = JSON.parse(this.responseText);
+          document.getElementById("LAMP_STATUS").innerHTML = json_msg.lamp_status;
+          document.getElementById("REM_TIME").innerHTML = json_msg.rem_time;
+          document.getElementById("AUDIO_STATUS").innerHTML = json_msg.audio_status;
+          document.getElementById("LIGHT_FREQ").innerHTML = json_msg.light_freq;
+          document.getElementById("FREE_HEAP").innerHTML = json_msg.free_heap;
+          document.getElementById("WIFI_SSID").innerHTML = json_msg.WiFi_ssid;
+        }
+      };
+      xhttp.open("GET", "/device_status", true);
+      xhttp.send();
+    }, 3000 ) ;
+
+    </script>
+  </body>
+</html>
