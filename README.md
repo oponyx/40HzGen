@@ -1,5 +1,5 @@
 # 40HzGen
-An ESP8266 based device that generates a flashing light at 40Hz (programmable) to be used for Gamma Light Therapy.
+An ESP8266 based device used to drive a flashing light at 40Hz (programmable) to be used for Gamma Light Therapy.
 
 http://news.mit.edu/2016/visual-stimulation-treatment-alzheimer-1207
 
