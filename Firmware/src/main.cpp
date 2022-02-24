@@ -1,3 +1,13 @@
+/**
+ * @file main.cpp
+ * @author oponyx
+ * @brief 
+ * @version 0.1
+ * @date 2022-01-24
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #include <Arduino.h>
 #include <stdint.h>
 
@@ -12,7 +22,7 @@
 #include "hw_config.h"
 #include "functions.h"
 
-// USING_TIM_DIV1 min 10hz Light Frequence could be used 
+// USING_TIM_DIV1 min 5hz Light Frequence could be used 
 #define USING_TIM_DIV1                true           // for shortest and most accurate timer
 #define USING_TIM_DIV16               false          // for medium time and medium accurate timer
 #define USING_TIM_DIV256              false          // for longest timer but least accurate. Default
@@ -20,11 +30,17 @@
 
 
 
-ESP8266TimerInterrupt ITimer;
-bool bDisplayUpdated;
+ESP8266TimerInterrupt ITimer; // Timer Interrupt used to call the ISR
+bool bDisplayUpdated;         // 'Display is updated' flag
 
 
-
+/**
+ * @brief Timed Interrupt Service Routine
+ * 
+ * Toggles the outputs
+ * 
+ * @return IRAM_ATTR 
+ */
 IRAM_ATTR void TimedISR() {
   lastTrigger = millis();
   if(bWorking){
@@ -33,7 +49,10 @@ IRAM_ATTR void TimedISR() {
   }
 }
 
-
+/**
+ * @brief OTA setup function
+ * 
+ */
 void setupOTA(){
   // per aggiornamenti OTA
   ArduinoOTA.onStart([]() {  
@@ -48,7 +67,7 @@ void setupOTA(){
     Serial.println("Start updating " + type);  
   });  
   ArduinoOTA.onEnd([]() {
-    Serial.println("\nEnd");
+    Serial.println("\nUpdate End");
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
@@ -64,8 +83,13 @@ void setupOTA(){
   ArduinoOTA.begin();
 }
 
+/**
+ * @brief Setup Input and Output pins
+ * 
+ * 
+ * 
+ */
 void setupIO(){
-
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(LIGHT_OUT, OUTPUT);
   pinMode(AUDIO_OUT, OUTPUT);
@@ -74,10 +98,12 @@ void setupIO(){
   pinMode(CANCEL_BUTTON, INPUT_PULLUP);
   pinMode(UP_BUTTON, INPUT_PULLUP);
   pinMode(DOWN_BUTTON, INPUT_PULLUP);
-
-
 }
 
+/**
+ * @brief Main setup function
+ * 
+ */
 void setup() {
   bWorking = false;
   bHalfSecond=false;
@@ -160,6 +186,10 @@ void setup() {
   digitalWrite(LIGHT_OUT,LOW); // test output end
 }
 
+/**
+ * @brief Main Loop
+ * 
+ */
 void loop() {
   handleButtons();
   handleCommands();

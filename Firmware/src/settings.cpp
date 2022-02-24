@@ -3,9 +3,15 @@
 
 
 
+// Struct containing the settings.
+// Use SettingsWrite() and SettingsRead() to save and load Settings to and from Flash
+TSettings Settings;   
 
-TSettings Settings;
-
+/**
+ * @brief Call this function to load Settings from Flash Memory
+ * 
+ * @return uint8_t 
+ */
 uint8_t SettingsRead(){
   EEPROM.begin(sizeof(TSettings));
   EEPROM.get(0,Settings);
@@ -14,6 +20,11 @@ uint8_t SettingsRead(){
   return 0;
 }
 
+/**
+ * @brief Call this function to save Settings to the Flash Memory
+ * 
+ * @return uint8_t 
+ */
 uint8_t SettingsWrite(){
   EEPROM.begin(sizeof(TSettings));
 
@@ -25,6 +36,11 @@ uint8_t SettingsWrite(){
   return 0;
 }
 
+/**
+ * @brief Call this function to restore default settings to the Flash Memory
+ * 
+ * @return uint8_t 
+ */
 uint8_t restoreDefaultSettings(){
   Settings.version = SETTINGS_VERSION;
   Settings.flag01 = DEFAULT_FLAG01;
@@ -50,7 +66,6 @@ uint8_t restoreDefaultSettings(){
     This example calculates a CRC value directly on the EEPROM values.
     The purpose of this example is to highlight how the EEPROM object can be used just like an array.
 ***/
-
 unsigned long eeprom_crc(void) {
   const unsigned long crc_table[16] = {
     0x00000000, 0x1db71064, 0x3b6e20c8, 0x26d930ac,
@@ -70,33 +85,3 @@ unsigned long eeprom_crc(void) {
   return crc;
 }
 
-
-/*
-// Load WLAN credentials from EEPROM 
-void loadCredentials() {
-  EEPROM.begin(512);
-  EEPROM.get(0, ssid);
-  EEPROM.get(0+sizeof(ssid), password);
-  char ok[2+1];
-  EEPROM.get(0+sizeof(ssid)+sizeof(password), ok);
-  EEPROM.end();
-  if (String(ok) != String("OK")) {
-    ssid[0] = 0;
-    password[0] = 0;
-  }
-  Serial.println("Recovered credentials:");
-  Serial.println(ssid);
-  Serial.println(strlen(password)>0?"********":"<no password>");
-}
-
-// Store WLAN credentials to EEPROM 
-void saveCredentials() {
-  EEPROM.begin(512);
-  EEPROM.put(0, ssid);
-  EEPROM.put(0+sizeof(ssid), password);
-  char ok[2+1] = "OK";
-  EEPROM.put(0+sizeof(ssid)+sizeof(password), ok);
-  EEPROM.commit();
-  EEPROM.end();
-}
-*/

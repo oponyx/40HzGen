@@ -5,16 +5,32 @@
 #include "config.h"
 
 
-bool bWorking,bHalfSecond,okButtonStatus,cancelButtonStatus,upButtonStatus,downButtonStatus;
-unsigned long start_millis, mills_2, lastTrigger,rem_time;
-uint16_t Command; 
+bool bWorking;                // Working flag: On if cycle is active 
+bool bHalfSecond;             // Half a second beat
+bool okButtonStatus;        
+bool cancelButtonStatus;
+bool upButtonStatus;
+bool downButtonStatus;
+unsigned long start_millis;   
+unsigned long mills_2;
+unsigned long lastTrigger;
+unsigned long rem_time;       // seconds left to the end of the cycle
+uint16_t Command;             // the variable used to dispatch commands
 
+/**
+ * @brief Start Working
+ * 
+ */
 void start(){
   start_millis = millis();
   bWorking = true;
   Serial.println("Started!!");
 }
 
+/**
+ * @brief Stops working 
+ * 
+ */
 void stop(){
   bWorking = false;
   rem_time = 0;
@@ -23,6 +39,12 @@ void stop(){
   dispReadyPage();
 }
 
+/**
+ * @brief Builds a Minutes and Seconds String from Seconds
+ * 
+ * @param seconds 
+ * @param minutesSeconds 
+ */
 void getMinutesAndSeconds(unsigned long seconds, String &minutesSeconds) {
   unsigned long minutes;
   
@@ -41,6 +63,10 @@ void getMinutesAndSeconds(unsigned long seconds, String &minutesSeconds) {
 }
 
 
+/**
+ * @brief Execute commands
+ * 
+ */
 void handleCommands(){
   switch(Command){
     case CMD_REBOOT:
@@ -64,6 +90,10 @@ void handleCommands(){
   }
 }
 
+/**
+ * @brief Push Button control function
+ * 
+ */
 void handleButtons(void){
   okButtonStatus = digitalRead(OK_BUTTON);
   cancelButtonStatus = digitalRead(CANCEL_BUTTON);

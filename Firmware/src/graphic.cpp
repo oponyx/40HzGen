@@ -6,6 +6,10 @@
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+/**
+ * @brief LCD Init function
+ * 
+ */
 void display_init() {
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if(!display.begin(SSD1306_SWITCHCAPVCC, OLED_I2C_ADRRESS)) { 
@@ -14,6 +18,10 @@ void display_init() {
   }
 }
 
+/**
+ * @brief Display the 'Ready Page' on the LCD
+ * 
+ */
 void dispReadyPage(){
   display.clearDisplay();
   display.setCursor(0,1);
@@ -22,6 +30,10 @@ void dispReadyPage(){
   display.display();
 }
 
+/**
+ * @brief Displays the 'Info Page' on the LCD
+ * 
+ */
 void dispInfoPage(){
   display.clearDisplay();
   display.setTextSize(1);             // Normal 1:1 pixel scale
@@ -36,6 +48,10 @@ void dispInfoPage(){
   display.display();
 }
 
+/**
+ * @brief Displays the 'Working Page' on the LCD
+ * 
+ */
 void dispWorkingPage(){
   display.clearDisplay();
   unsigned long rem_time = (Settings.on_time * 60 - ((millis() - start_millis) / 1000));

@@ -13,7 +13,7 @@ https://picower.mit.edu/innovations-inventions/genus
 Features:
   * Complete configuration and control through web pages
   * Programmable Light On Time and Gamma Frequence 
-  * WIFI Station and Ap mode
+  * WIFI Station and AP mode
 
 
 

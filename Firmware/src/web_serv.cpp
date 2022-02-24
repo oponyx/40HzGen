@@ -7,7 +7,7 @@
 #include "hw_config.h"
 #include "functions.h"
 
-AsyncWebServer web_server(80);
+AsyncWebServer web_server(80); // the Generator web server
 
 // index page
 // don't need to escape '%' chars (this page is not scanned by the processor..)
@@ -221,6 +221,7 @@ const char index_page[] PROGMEM = R"rawliteral(
 </html>
 )rawliteral";
 
+// Rebooting HTML Page
 const char rebooting_page[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html>
 <head>
@@ -248,6 +249,7 @@ const char rebooting_page[] PROGMEM = R"rawliteral(
 </body></html>
 )rawliteral";
 
+// Settings HTML Page
 const char settings_page[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html>
 <head>
@@ -357,7 +359,10 @@ const char settings_page[] PROGMEM = R"rawliteral(
 //          <span class="param-labels">LIGHT FREQ</span> 
 //          <input type="text" id="LIGHT_FREQ" name="LIGHT_FREQ" value="%LIGHT_FREQ%"><span class="units">Hz</span>
 
-
+/**
+ * @brief Function to init the web server
+ * 
+ */
 void web_serv_setup(){
     web_server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
        Serial.printf("WEB: HTTP-GET request '/' from %s\n", request->client()->remoteIP().toString().c_str());
@@ -487,12 +492,16 @@ void web_serv_setup(){
         Command = CMD_REBOOT;
       }
     }); // server.on
-
- 
+    // start the server
     web_server.begin();
 }
 
-
+/**
+ * @brief processor function to set the fields in HTML pages
+ * 
+ * @param var 
+ * @return String 
+ */
 String processor(const String& var){
   //Serial.println(var);
   if(var == "WIFI_SSID"){

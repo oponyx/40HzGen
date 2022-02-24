@@ -46,15 +46,15 @@ typedef union {
 } flag01;
 
 typedef struct {
-  uint16_t      crc;                       // 000
-  uint32_t      version;                   // 002  
-  uint8_t       flag01;                    // 006
-  char          wifi_ssid[16];             // 007
-  char          wifi_psw[24];              // 0..
-  char          ap_ssid[16];               // 0..
-  char          ap_psw[16];                // 0..
-  uint16_t      light_freq;                // 0..
-  uint16_t      on_time;                // 0..
+  uint16_t      crc;                        // crc settings
+  uint32_t      version;                    // Settings version  
+  uint8_t       flag01;                     // Flag Byte Stored in Settings
+  char          wifi_ssid[16];              // Wifi SSID Stored in Setting
+  char          wifi_psw[24];               // Wifi Password Stored in Setting
+  char          ap_ssid[16];                // Access Poin Mode SSID name Stored in Setting
+  char          ap_psw[16];                 // Access Poin Mode Password Stored in Setting
+  uint16_t      light_freq;                 // Gamma Frequence Stored in Setting
+  uint16_t      on_time;                    // OnTime Stored in Setting
 } TSettings;
 
 extern TSettings Settings;
