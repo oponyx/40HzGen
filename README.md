@@ -1,7 +1,6 @@
-# Warning!!! 
-# This device will flash/stobe the light! 
-# Don't use it near individuals with epilepsy!
-# The research has not been tested and has not been proven to work on humans!!
+# Warning!!!  This device will flash/stobe the light!  Don't use it near individuals with epilepsy!
+# The research has not been tested and has not been proven to work on humans! Use it on your own risk!
+
 
 # 40HzGen
 An advanced ESP8266 based device used to drive a 40Hz (programmable) flashing led light for non invasive Alzheimer Gamma Light Therapy.
