@@ -474,7 +474,7 @@ void web_serv_setup(){
           Serial.printf("save_settings page received->GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
         }
       } // for(int i=0;i<params;i++)
-      request -> send(200, "text/plain", rebooting_page);
+      request -> send(200, "text/html", rebooting_page);
       if(bSettingsChanged){
         SettingsWrite();
         Command = CMD_REBOOT;
