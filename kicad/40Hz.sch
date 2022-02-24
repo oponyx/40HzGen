@@ -736,14 +736,6 @@ F 3 "~" H 5950 5450 50  0001 C CNN
 	1    5950 5450
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	5750 4850 5450 4850
-Wire Wire Line
-	5750 4950 5450 4950
-Text Label 5500 4850 0    50   ~ 0
-ACIN1
-Text Label 5500 4950 0    50   ~ 0
-ACIN2
 Text Label 8550 5350 0    50   ~ 0
 ACIN1
 $Comp
