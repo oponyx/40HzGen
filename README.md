@@ -15,7 +15,7 @@ Features:
   * Programmable Light On Time and Gamma Frequence 
   * WIFI Station and AP mode
 
-
+![alt text](https://github.com/oponyx/40HzGen/blob/master/kicad/40Hz.jpg?raw=true "PCB")
 
 
 
