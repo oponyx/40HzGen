@@ -237,7 +237,14 @@ const char rebooting_page[] PROGMEM = R"rawliteral(
   </style>
 </head>
 <body>
-  <h2>Rebooting, please wait...</h2>
+  <h2>Rebooting, please wait, you'll be redirected...</h2>
+  <script>
+    $(document).ready(function () {
+        window.setTimeout(function () {
+            location.href = "/index.html";
+        }, 5000);
+    });  
+  </script>
 </body></html>
 )rawliteral";
 
