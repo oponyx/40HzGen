@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <EEPROM.h>
+#include <CRC16.h>
 
 #define SETTINGS_VERSION 0x00000010
 #define DEFAULT_FLAG01 0x00
@@ -21,17 +22,18 @@
 
 
 // commands defines
-#define NO_COMMANDS   0x0000
-#define CMD_REBOOT    0x0001
-#define CMD_START     0x0002
-#define CMD_STOP      0x0003
-
+#define CMD_NO_COMMANDS               0x0000
+#define CMD_REBOOT                    0x0001
+#define CMD_START                     0x0002
+#define CMD_STOP                      0x0003
+#define CMD_SAVE_SETTING_AND_REBOOT   0x0004
 
 
 
 uint8_t SettingsRead();
 uint8_t restoreDefaultSettings();
 uint8_t SettingsWrite();
+uint16_t SettingsCRC();
 
 typedef union {
   uint8_t data;

@@ -1451,7 +1451,7 @@
     (descr "ACDC-Converter, 3W, HiLink, HLK-PMxx, THT, http://www.hlktech.net/product_detail.php?ProId=54")
     (tags "ACDC-Converter 3W THT HiLink board mount module")
     (path /61F3A82E)
-    (fp_text reference PS1 (at -3.94 -0.55) (layer F.SilkS)
+    (fp_text reference PS1 (at 8.89 3.81) (layer F.SilkS)
       (effects (font (size 1 1) (thickness 0.15)))
     )
     (fp_text value HLK-PM01 (at 15.79 3.81 90) (layer F.Fab)

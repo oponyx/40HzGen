@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "eeprom.h": "c",
-        "string": "cpp"
+        "string": "cpp",
+        "functional": "cpp"
     }
 }

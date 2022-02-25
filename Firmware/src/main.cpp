@@ -21,6 +21,7 @@
 #include "web_serv.h"
 #include "hw_config.h"
 #include "functions.h"
+#include "error_codes.h"
 
 // USING_TIM_DIV1 min 5hz Light Frequence could be used 
 #define USING_TIM_DIV1                true           // for shortest and most accurate timer
@@ -119,8 +120,20 @@ void setup() {
   }
 
   Serial.println("Loading Settings");
-  if(SettingsRead()){
-
+  uint8_t result = SettingsRead();
+  if( result != 0 ){
+    switch ( result )
+    {
+    case ERROR_SETTINGS_CRC:
+        Serial.println("Error: Bad CRC on settings datas\nResoring default settings.");
+        restoreDefaultSettings();
+      break;
+    
+    default:
+      break;
+    }
+  }else{
+    Serial.println("Settings loaded.");
   }
   Serial.printf("WIFI SSID:%s\n", Settings.wifi_ssid);
   Serial.printf("WIFI PWD:%s\n", Settings.wifi_psw);

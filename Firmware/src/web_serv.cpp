@@ -488,8 +488,7 @@ void web_serv_setup(){
       } // for(int i=0;i<params;i++)
       request -> send(200, "text/html", rebooting_page);
       if(bSettingsChanged){
-        SettingsWrite();
-        Command = CMD_REBOOT;
+        Command = CMD_SAVE_SETTING_AND_REBOOT;
       }
     }); // server.on
     // start the server

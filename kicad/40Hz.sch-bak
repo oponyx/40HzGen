@@ -470,7 +470,7 @@ Wire Wire Line
 Wire Wire Line
 	2000 4950 1050 4950
 Text Label 1800 4950 0    50   ~ 0
-IO16
+IO14
 Text Label 1800 5900 0    50   ~ 0
 IO12
 Text Label 1800 6350 0    50   ~ 0
@@ -717,7 +717,7 @@ Wire Wire Line
 Wire Wire Line
 	1300 5400 1300 6400
 Text Label 1800 5400 0    50   ~ 0
-IO14
+IO16
 Wire Wire Line
 	1300 6750 1550 6750
 Wire Wire Line
@@ -736,14 +736,6 @@ F 3 "~" H 5950 5450 50  0001 C CNN
 	1    5950 5450
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	5750 4850 5450 4850
-Wire Wire Line
-	5750 4950 5450 4950
-Text Label 5500 4850 0    50   ~ 0
-ACIN1
-Text Label 5500 4950 0    50   ~ 0
-ACIN2
 Text Label 8550 5350 0    50   ~ 0
 ACIN1
 $Comp

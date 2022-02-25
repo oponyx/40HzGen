@@ -69,6 +69,12 @@ void getMinutesAndSeconds(unsigned long seconds, String &minutesSeconds) {
  */
 void handleCommands(){
   switch(Command){
+    case CMD_SAVE_SETTING_AND_REBOOT:
+      Serial.println("CMD Save Settings and Reboot detected");
+      delay(1000);
+      SettingsWrite();
+      ESP.restart();
+      break;
     case CMD_REBOOT:
       Serial.println("CMD Reboot detected");
       delay(1000);
@@ -76,12 +82,12 @@ void handleCommands(){
       break;
     case CMD_START:
       Serial.println("CMD start detected");
-      Command = NO_COMMANDS;
+      Command = CMD_NO_COMMANDS;
       start();
       break;
     case CMD_STOP:
       Serial.println("CMD stop detected");
-      Command = NO_COMMANDS;
+      Command = CMD_NO_COMMANDS;
       stop();
       break;
     default:

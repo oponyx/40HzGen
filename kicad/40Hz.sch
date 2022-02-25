@@ -258,17 +258,6 @@ Wire Wire Line
 Wire Wire Line
 	4800 6250 4800 5950
 Connection ~ 4800 6250
-$Comp
-L Diode:BYV79-200 D1
-U 1 1 61F3A6D4
-P 4800 5250
-F 0 "D1" V 4754 5330 50  0000 L CNN
-F 1 "BYV79-200" V 4845 5330 50  0000 L CNN
-F 2 "Diode_THT:D_DO-15_P5.08mm_Vertical_KathodeUp" H 4800 5075 50  0001 C CNN
-F 3 "http://pdf.datasheetcatalog.com/datasheet/philips/BYV79-100.pdf" H 4800 5250 50  0001 C CNN
-	1    4800 5250
-	0    1    1    0   
-$EndComp
 Connection ~ 4800 5050
 Wire Wire Line
 	4800 5050 5400 5050
@@ -881,4 +870,19 @@ Text Label 5550 5650 0    50   ~ 0
 ACIN1
 Text Label 5550 5750 0    50   ~ 0
 ACIN2
+Text Notes 7350 1150 0    79   ~ 0
+To be populated only if not using Wemos_D1_mini (U2)
+$Comp
+L Diode:BYV79-200 D1
+U 1 1 61F3A6D4
+P 4800 5250
+F 0 "D1" V 4754 5330 50  0000 L CNN
+F 1 "BYV79-200" V 4845 5330 50  0000 L CNN
+F 2 "Diode_THT:D_DO-15_P5.08mm_Vertical_KathodeUp" H 4800 5075 50  0001 C CNN
+F 3 "http://pdf.datasheetcatalog.com/datasheet/philips/BYV79-100.pdf" H 4800 5250 50  0001 C CNN
+	1    4800 5250
+	0    1    1    0   
+$EndComp
+Text Notes 3900 4950 0    79   ~ 0
+Mount D1 only for inductive loads
 $EndSCHEMATC
