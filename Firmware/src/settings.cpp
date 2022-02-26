@@ -34,7 +34,7 @@ uint8_t SettingsRead(){
 uint8_t SettingsWrite(){
   EEPROM.begin(sizeof(TSettings));
 
-  //calculates crc sattings
+  //add settings crc
   Settings.crc = SettingsCRC();
   EEPROM.put(0,Settings);
   EEPROM.commit();
@@ -62,21 +62,21 @@ uint8_t restoreDefaultSettings(){
   strcpy(Settings.ap_psw, AP_DEFAULT_PASSW);
   Settings.light_freq = DEFAULT_LIGHT_FREQ;
   Settings.on_time = DEFAULT_ON_TIME;
-
+  Settings.crc = SettingsCRC();
   SettingsWrite();
   return NO_ERRORS;
 }
 
 /**
- * @brief Calculates the CRC16 on the settings stored in non volatile memory
+ * @brief Calculates the CRC16 on the settings struct
  * 
  * @return uint16_t 
  */
 uint16_t SettingsCRC(){
   CRC16 SettingsCRC; 
-
+  char* buffer = reinterpret_cast<char*>(&Settings);
   for( uint16_t address = sizeof(Settings.crc); address < sizeof(TSettings); address++ ){
-    SettingsCRC.add(EEPROM[address]);
+    SettingsCRC.add(buffer[address]);
   }
   return SettingsCRC.getCRC();
 }
