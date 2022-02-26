@@ -12,7 +12,7 @@ https://picower.mit.edu/innovations-inventions/genus
 
 Features:
   * Complete configuration and control through web pages
-  * Programmable Light On Time and Gamma Frequence 
+  * Programmable Light On-Time, Gamma Frequence and Light Brightness 
   * WIFI Station and AP mode
 
 ![alt text](https://github.com/oponyx/40HzGen/blob/master/kicad/40Hz.jpg?raw=true "PCB")

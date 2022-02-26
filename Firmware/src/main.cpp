@@ -33,7 +33,7 @@
 
 ESP8266TimerInterrupt ITimer; // Timer Interrupt used to call the ISR
 bool bDisplayUpdated;         // 'Display is updated' flag
-
+bool bLastLightStatus;
 
 /**
  * @brief Timed Interrupt Service Routine
@@ -46,7 +46,9 @@ IRAM_ATTR void TimedISR() {
   lastTrigger = millis();
   if(bWorking){
     //switch the light on/off
-    digitalWrite(LIGHT_OUT, !digitalRead(LIGHT_OUT));
+    //digitalWrite(LIGHT_OUT, !digitalRead(LIGHT_OUT));
+    (bLastLightStatus == false) ? analogWrite(LIGHT_OUT, Settings.brightness) : analogWrite(LIGHT_OUT, 0);
+    bLastLightStatus = !bLastLightStatus;
   }
 }
 
@@ -99,6 +101,9 @@ void setupIO(){
   pinMode(CANCEL_BUTTON, INPUT_PULLUP);
   pinMode(UP_BUTTON, INPUT_PULLUP);
   pinMode(DOWN_BUTTON, INPUT_PULLUP);
+
+  analogWriteFreq(Settings.pwm_freq);
+  analogWriteRange(MAX_BRIGHTNESS);
 }
 
 /**

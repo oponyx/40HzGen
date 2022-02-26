@@ -62,6 +62,8 @@ uint8_t restoreDefaultSettings(){
   strcpy(Settings.ap_psw, AP_DEFAULT_PASSW);
   Settings.light_freq = DEFAULT_LIGHT_FREQ;
   Settings.on_time = DEFAULT_ON_TIME;
+  Settings.brightness = DEFAULT_BRIGHTNESS;
+  Settings.pwm_freq = DEFAULT_PWM_FREQ;
   Settings.crc = SettingsCRC();
   SettingsWrite();
   return NO_ERRORS;

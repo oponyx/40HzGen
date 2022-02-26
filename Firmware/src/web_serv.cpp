@@ -310,6 +310,12 @@ const char settings_page[] PROGMEM = R"rawliteral(
           <label for="ON_TIME" class="param-labels">ON TIME</label>
           <input type="number" id="ON_TIME" name="ON_TIME" min="2" max="100" value="%ON_TIME%"><span class="units">Min</span>
           <br>
+          <label for="BRIGHTNESS" class="param-labels">Brightness</label>
+          <input type="number" id="BRIGHTNESS" name="BRIGHTNESS" min="10" max="100" value="%BRIGHTNESS%"><span class="units">%%</span>
+          <br>
+          <label for="PWM_FREQ" class="param-labels">PWM Freq</label>
+          <input type="number" id="PWM_FREQ" name="PWM_FREQ" min="1000" max="10000" value="%PWM_FREQ%"><span class="units">Hz</span>
+          <br>
           <br>
 
         <input type="submit" value="Submit" style="width:80%%;">
@@ -430,6 +436,7 @@ void web_serv_setup(){
       root["free_heap"] = ESP.getFreeHeap();
       root["WiFi_ssid"] = WiFi.SSID();
       root["up_time"] = millis();
+      root["brightness"] = Settings.brightness;
       root["okButtonStatus"] = okButtonStatus;
       root["cancelButtonStatus"] = cancelButtonStatus;
       root["upButtonStatus"] = upButtonStatus;
@@ -480,6 +487,20 @@ void web_serv_setup(){
               val = ( val > MAX_ON_TIME ) ? MAX_ON_TIME : val ;  
               Settings.on_time =  val;
               bSettingsChanged=true;
+            } else if ( p->name() == "BRIGHTNESS" ){
+              val = p->value().toInt();
+              // check min/max 
+              val = ( val < MIN_BRIGHTNESS ) ? MIN_BRIGHTNESS : val ;
+              val = ( val > MAX_BRIGHTNESS ) ? MAX_BRIGHTNESS : val ;  
+              Settings.brightness =  val;
+              bSettingsChanged=true;
+            } else if ( p->name() == "PWM_FREQ" ){
+              val = p->value().toInt();
+              // check min/max 
+              val = ( val < MIN_PWM_FREQ ) ? MIN_PWM_FREQ : val ;
+              val = ( val > MAX_PWM_FREQ ) ? MAX_PWM_FREQ : val ;  
+              Settings.pwm_freq =  val;
+              bSettingsChanged=true;
             }
             ////////////////////////////////////////////////
         } else {
@@ -520,6 +541,12 @@ String processor(const String& var){
   }
   else if(var == "ON_TIME"){
     return String(Settings.on_time);
+  }
+  else if(var == "BRIGHTNESS"){
+    return String(Settings.brightness);
+  }
+  else if(var == "PWM_FREQ"){
+    return String(Settings.pwm_freq);
   }
   return String();
 }

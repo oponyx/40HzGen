@@ -13,11 +13,18 @@
 #define AP_DEFAULT_PASSW "12345678"
 #define DEFAULT_LIGHT_FREQ 40
 #define DEFAULT_ON_TIME 60
+#define DEFAULT_BRIGHTNESS 100
+#define DEFAULT_PWM_FREQ 1000
 
-#define MIN_LIGHT_FREQ 5
-#define MAX_LIGHT_FREQ 100
-#define MIN_ON_TIME 2
-#define MAX_ON_TIME 100
+
+#define MIN_LIGHT_FREQ  5
+#define MAX_LIGHT_FREQ  100
+#define MIN_ON_TIME     2
+#define MAX_ON_TIME     100
+#define MIN_BRIGHTNESS  10
+#define MAX_BRIGHTNESS  100
+#define MIN_PWM_FREQ    1000
+#define MAX_PWM_FREQ    50000
 
 
 
@@ -57,6 +64,8 @@ typedef struct {
   char          ap_psw[16];                 // Access Poin Mode Password Stored in Setting
   uint16_t      light_freq;                 // Gamma Frequence Stored in Setting
   uint16_t      on_time;                    // OnTime Stored in Setting
+  uint8_t       brightness;                 // light brightness 10-100%
+  uint32_t      pwm_freq;                   // light pwm frequence
 } TSettings;
 
 extern TSettings Settings;
