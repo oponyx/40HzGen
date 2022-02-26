@@ -732,7 +732,7 @@ L Device:Fuse_Small F1
 U 1 1 62287233
 P 8900 5150
 F 0 "F1" H 8900 5335 50  0000 C CNN
-F 1 "200mA" H 8900 5244 50  0000 C CNN
+F 1 "100mA" H 8900 5244 50  0000 C CNN
 F 2 "Fuse:Fuse_1206_3216Metric" H 8900 5150 50  0001 C CNN
 F 3 "~" H 8900 5150 50  0001 C CNN
 	1    8900 5150
@@ -749,12 +749,12 @@ ACIN2
 $Comp
 L Connector:Conn_01x02_Male J2
 U 1 1 622AC1D8
-P 10400 5200
-F 0 "J2" H 10372 5082 50  0000 R CNN
-F 1 "5V" H 10372 5173 50  0000 R CNN
-F 2 "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-3-2-5.08_1x02_P5.08mm_Horizontal" H 10400 5200 50  0001 C CNN
-F 3 "~" H 10400 5200 50  0001 C CNN
-	1    10400 5200
+P 10700 5200
+F 0 "J2" H 10672 5082 50  0000 R CNN
+F 1 "5V" H 10672 5173 50  0000 R CNN
+F 2 "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-3-2-5.08_1x02_P5.08mm_Horizontal" H 10700 5200 50  0001 C CNN
+F 3 "~" H 10700 5200 50  0001 C CNN
+	1    10700 5200
 	-1   0    0    -1  
 $EndComp
 Wire Wire Line
@@ -885,4 +885,21 @@ F 3 "http://pdf.datasheetcatalog.com/datasheet/philips/BYV79-100.pdf" H 4800 525
 $EndComp
 Text Notes 3900 4950 0    79   ~ 0
 Mount D1 only for inductive loads
+$Comp
+L Device:Fuse_Small F2
+U 1 1 621A756A
+P 10350 5200
+F 0 "F2" H 10350 5385 50  0000 C CNN
+F 1 "200mA" H 10350 5294 50  0000 C CNN
+F 2 "Fuse:Fuse_1206_3216Metric" H 10350 5200 50  0001 C CNN
+F 3 "~" H 10350 5200 50  0001 C CNN
+	1    10350 5200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	10200 5200 10250 5200
+Wire Wire Line
+	10500 5200 10450 5200
+Wire Wire Line
+	10500 5300 10200 5300
 $EndSCHEMATC
