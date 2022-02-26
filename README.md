@@ -1,4 +1,4 @@
-# Warning!!!  This device will flash/stobe the light!  Don't use it near individuals with epilepsy!
+# Warning!!!  This device will flash/strobe the light!  Don't use it next to individuals with epilepsy!
 # The research has not been tested and has not been proven to work on humans! Use it on your own risk!
 
 
@@ -17,6 +17,8 @@ Features:
 
 ![alt text](https://github.com/oponyx/40HzGen/blob/master/kicad/40Hz.jpg?raw=true "PCB")
 
-
-
+ * Board designed to support Wemos D1 mini or ESP12F modules
+ * Optional OLED SS1306 Display 
+ * Power to logic from AC main (populating PS1 with a HLK-PM01 module) or direct external 5V
+ * External Input for Light Power 
 
