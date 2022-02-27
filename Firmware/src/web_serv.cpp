@@ -19,6 +19,10 @@ const char index_page[] PROGMEM = R"rawliteral(
     <meta charset=utf-8>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
+      table, th, td {
+        border: 1px solid;
+      }
+
       body {
         text-align: center;
         font-family: verdana,sans-serif;
@@ -44,11 +48,10 @@ const char index_page[] PROGMEM = R"rawliteral(
         transition-duration: 0.4s;
         cursor: pointer;
       }
-      .units { font-size: 1.0rem; }
+      .units { font-size: 0.7rem; }
       .param-labels{
         font-size: 1.0rem;
         vertical-align:middle;
-        padding-bottom: 15px;
       }
       button[disabled]:active, button[disabled],
       input[type="button"][disabled]:active,
@@ -68,84 +71,95 @@ const char index_page[] PROGMEM = R"rawliteral(
     </style>
   </head>
   <body>
+    <center><div style="width: 80%">  
     <h2>40Hz Generator</h2>
     <div>
-      <table style="width: 100%"><tbody>
+    <table style="width: 100%"><tbody>
         <tr>
-          <td style="width: 10%"></td>     
-          <td  style="width: 40%">     
+        <td style="width: 10%"></td>     
+        <td  style="width: 40%">     
             <button disabled="true" id="BUTT_START" onclick="start()" class="button" style="background: #f50404; width: 100%">Start</Button>
-          </td>
-          <td style="width: 40%">     
+        </td>
+        <td style="width: 40%">     
             <button disabled="true" id="BUTT_STOP" onclick="stop()" class="button" style="background: #03df28;width: 100%">Stop</Button>
-          </td>
-          <td style="width: 10%"></td>     
+        </td>
+        <td style="width: 10%"></td>     
         </tr>
-      </tbody></table>
+    </tbody></table>
     </div>  
     <div>
         <p>Status:&nbsp;&nbsp;
         <span id="MESSAGE">Wait...</span></p>
     </div>  
 
-    <table style="width: 100%">
-      <tbody></tbody>
+    <table style="width: 100%;">
+    <tbody>
         <tr>
-          <td>     
+            <td colspan="3" style="text-align:center";>     
+                <span class="param-labels">Brightness</span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3" style="text-align:center";>
+                <input style="width: 100%;" type="range" id="BRIGHTNESS_SLIDER" name="BRIGHTNESS_SLIDER" min="10" max="100" >
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3" style="text-align:center";>
+            <span class="param-labels" id="BRIGHTNESS">val</span><span class="units">%</span>
+            </td>
+        </tr>
+        <td>     
             <span class="param-labels">Light Status:</span> 
             <span id="LIGHT_STATUS">?</span>
         </td>
         <td>
             <span class="param-labels">Audio Status:</span> 
-          <span id="AUDIO_STATUS">?</span>
+        <span id="AUDIO_STATUS">?</span>
         </td>
         <td>
-          <span class="param-labels">Frequence:</span> 
-          <span id="LIGHT_FREQ">?</span><span class="units">&nbspHz</span>
+        <span class="param-labels">Frequence:</span> 
+        <span id="LIGHT_FREQ">?</span><span class="units">&nbspHz</span>
         </td>
-      </tr>
-      <tr>
+    </tr>
+    <tr>
         <td>
-          <span class="param-labels">Rem. Time:</span> 
-          <span id="REM_TIME">?</span><span class="units">&nbspSec</span>
-        </td>
-        <td>
-          <span class="param-labels">UP TIME:</span> 
-          <span id="UP_TIME">?</span>
+        <span class="param-labels">Rem. Time:</span> 
+        <span id="REM_TIME">?</span><span class="units">&nbspSec</span>
         </td>
         <td>
-          <span class="param-labels">Free Heap:</span> 
-          <span id="FREE_HEAP">?</span>
+        <span class="param-labels">UP TIME:</span> 
+        <span id="UP_TIME">?</span>
         </td>
-      </tr>  
-    </tbody></table>
-    <br>
-    <table style="width: 100%"><tbody>
-      <tr>
-        <td style="width: 10%"></td>
-        <td  style="width: 80%">     
-          <form id=but1 style="display: block;" action='/settings' method='get'><button>Settings</button></form>
+        <td>
+        <span class="param-labels">Free Heap:</span> 
+        <span id="FREE_HEAP">?</span>
         </td>
-        <td style="width: 10%"></td>
-      </tr>
+    </tr>  
+    <tr>
+        <td  colspan="3">     
+        <form id=but1 style="display: block;" action='/settings' method='get'><button>Settings</button></form>
+        </td>
+    </tr>
     <tr>
     </tbody></table>
     <div>
-      <table style="width:100%">
+    <table style="width:100%; display:none" >
         <tr>
-          <td width="25%">OK</td>
-          <td width="25%">UP</td>
-          <td width="25%">DOWN</td>
-          <td width="25%">CANCEL</td>
+        <td width="25%">OK</td>
+        <td width="25%">UP</td>
+        <td width="25%">DOWN</td>
+        <td width="25%">CANCEL</td>
         </tr>
         <tr>
-          <td id="OK_BUTTON">?</td>
-          <td id="UP_BUTTON">?</td>
-          <td id="DOWN_BUTTON">?</td>
-          <td id="CANCEL_BUTTON">?</td>
+        <td id="OK_BUTTON">?</td>
+        <td id="UP_BUTTON">?</td>
+        <td id="DOWN_BUTTON">?</td>
+        <td id="CANCEL_BUTTON">?</td>
         </tr>
-      </table>
+    </table>
     </div>
+</div></center>
     <script>
       function start(){
         var xhttp = new XMLHttpRequest();
@@ -183,6 +197,28 @@ const char index_page[] PROGMEM = R"rawliteral(
         xhttp.send();
       }
 
+      var brightness_slider = document.getElementById("BRIGHTNESS_SLIDER");  
+
+      brightness_slider.oninput = function() {
+        document.getElementById("BRIGHTNESS").innerHTML = this.value;
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+          if (this.readyState == 4 && this.status == 200) {
+            // get json data
+            //json_msg=data;
+            console.log("Received data:" + this.responseText);
+            var json_msg = JSON.parse(this.responseText);
+            document.getElementById("BRIGHTNESS_SLIDER").value = json_msg.brightness;
+            document.getElementById("BRIGHTNESS").innerHTML = json_msg.brightness;
+          }
+        };
+        var Data2Send= new FormData(); 
+        Data2Send.append("brightness",  this.value);
+        console.log("Sending data:" + Data2Send);
+        xhttp.open("POST", "/set_bri", true);
+        xhttp.send(Data2Send);
+      } 
+
       setInterval(function ( ) {
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
@@ -191,6 +227,8 @@ const char index_page[] PROGMEM = R"rawliteral(
             //json_msg=data;
             console.log("Received data:" + this.responseText);
             var json_msg = JSON.parse(this.responseText);
+            document.getElementById("BRIGHTNESS_SLIDER").value = json_msg.brightness;
+            document.getElementById("BRIGHTNESS").innerHTML = json_msg.brightness;
             document.getElementById("LIGHT_STATUS").innerHTML = json_msg.light_status;
             document.getElementById("REM_TIME").innerHTML = json_msg.rem_time;
             document.getElementById("AUDIO_STATUS").innerHTML = json_msg.audio_status;
@@ -224,30 +262,38 @@ const char index_page[] PROGMEM = R"rawliteral(
 
 // Rebooting HTML Page
 const char rebooting_page[] PROGMEM = R"rawliteral(
-<!DOCTYPE HTML><html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    html {
-     font-family: Arial;
-     display: inline-block;
-     margin: 0px auto;
-     text-align: center;
-    }
-    h2 { font-size: 3.0rem; }
-    p { font-size: 3.0rem; }
-  </style>
-</head>
-<body>
-  <h2>Rebooting, please wait, you'll be redirected...</h2>
-  <script>
-    $(document).ready(function () {
-        window.setTimeout(function () {
-            location.href = "/index.html";
-        }, 5000);
-    });  
-  </script>
-</body></html>
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      body {
+        text-align: center;
+        font-family: verdana,sans-serif;
+        background: #252525;
+      }
+      html {
+        font-family: Arial;
+        display: inline-block;
+        margin: 0px auto;
+        text-align: center;
+        color: azure;
+      }
+      h2 { font-size: 3.0rem; }
+      p { font-size: 2.0rem; }
+    </style>
+  </head>
+  <body>
+    <h2>Rebooting, please wait, you'll be redirected in 10 seconds...</h2>
+    <script>
+      $(document).ready(function () {
+          window.setTimeout(function () {
+              location.href = "/index.html";
+          }, 8000);
+      });  
+    </script>
+  </body>
+</html>
 )rawliteral";
 
 // Settings HTML Page
@@ -423,6 +469,37 @@ uint16_t web_serv_setup(){
       Serial.printf("WEB sent response\n");
       Command = CMD_STOP; // Stop command
     });
+    web_server.on("/set_bri", HTTP_GET, [](AsyncWebServerRequest *request){
+      long val;
+      Serial.printf("WEB: HTTP-GET request '/set_bri' from %s\n", request->client()->remoteIP().toString().c_str());
+      int params = request->params();
+      for(int i=0;i<params;i++){
+        AsyncWebParameter* p = request->getParam(i);
+        if(p->isPost()){
+          Serial.printf("set_bri page received->POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
+          if ( p->name() == "BRIGHTNESS" ){
+              val = p->value().toInt();
+              // check min/max 
+              val = ( val < MIN_LIGHT_FREQ ) ? MIN_LIGHT_FREQ : val ;
+              val = ( val > MAX_LIGHT_FREQ ) ? MAX_LIGHT_FREQ : val ;
+              Settings.brightness = val;
+
+            }
+
+        }
+      }
+      AsyncJsonResponse * resp = new AsyncJsonResponse();
+      resp->addHeader("Server", "ESP Async Web Server");
+      JsonObject root = resp->getRoot();
+      root["result"] = "OK";
+      root["Error_code"] = 0;
+      root["Error_message"] = "No Errors";
+      root["brightness"] = Settings.brightness;
+      resp->setLength();
+      request->send(resp);
+      Serial.printf("WEB sent response\n");
+      Command = CMD_STOP; // Stop command
+    });
     // send status json message
     web_server.on("/device_status", HTTP_GET, [](AsyncWebServerRequest *request){
       Serial.printf("WEB: HTTP-GET request '/device_status' from %s\n", request->client()->remoteIP().toString().c_str());
@@ -438,6 +515,7 @@ uint16_t web_serv_setup(){
       root["WiFi_ssid"] = WiFi.SSID();
       root["up_time"] = millis();
       root["brightness"] = Settings.brightness;
+      root["pwm_freq"] = Settings.pwm_freq;
       root["okButtonStatus"] = okButtonStatus;
       root["cancelButtonStatus"] = cancelButtonStatus;
       root["upButtonStatus"] = upButtonStatus;
