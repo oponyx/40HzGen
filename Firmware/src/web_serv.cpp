@@ -6,6 +6,7 @@
 #include "settings.h"
 #include "hw_config.h"
 #include "functions.h"
+#include "error_codes.h"
 
 AsyncWebServer web_server(80); // the Generator web server
 
@@ -369,7 +370,7 @@ const char settings_page[] PROGMEM = R"rawliteral(
  * @brief Function to init the web server
  * 
  */
-void web_serv_setup(){
+uint16_t web_serv_setup(){
     web_server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
        Serial.printf("WEB: HTTP-GET request '/' from %s\n", request->client()->remoteIP().toString().c_str());
       request->send_P(200, "text/html", index_page);
@@ -514,6 +515,7 @@ void web_serv_setup(){
     }); // server.on
     // start the server
     web_server.begin();
+    return NO_ERRORS;
 }
 
 /**

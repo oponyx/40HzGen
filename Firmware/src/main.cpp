@@ -144,6 +144,9 @@ void setup() {
   Serial.printf("WIFI PWD:%s\n", Settings.wifi_psw);
   Serial.printf("AP SSID:%s\n", Settings.ap_ssid);
   Serial.printf("AP PWD:%s\n", Settings.ap_psw);
+  Serial.printf("On time:%u\n", Settings.on_time);
+  Serial.printf("Brightness:%u\n", Settings.brightness);
+  Serial.printf("PWM Freq:%u\n", Settings.pwm_freq);
 
   display_init();
   display.clearDisplay();
@@ -169,20 +172,24 @@ void setup() {
     display.println(WiFi.softAPIP());
   }
   
-  display.println(F("Setting up WIFI..."));
-  Serial.println(F("Setting up WIFI..."));
+  display.printf("Setting up WIFI...");
+  Serial.printf("Setting up WIFI...");
   if(wifi_setup()){
     Serial.println("WIFI connection KO!");   
   }
   else{
-    Serial.println("");
+    Serial.println("OK!");
     Serial.println("WIFI connection Successful");
     Serial.print("WIFI IP Address is: ");
     Serial.println(WiFi.localIP());// Print the IP address
   }
 
-  display.println(F("Starting web server"));
-  web_serv_setup();
+  Serial.printf("Starting web server...");
+  if (web_serv_setup() == NO_ERRORS) {
+    Serial.println("OK!");
+  }else{
+    Serial.println("ERROR!");
+  }
 
 
   // per aggiornamenti OTA

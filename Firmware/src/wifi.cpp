@@ -45,9 +45,9 @@ bool wifi_setup(){
         return false;
     }
      delay(500);
-     Serial.print("*");
+     Serial.print(".");
   }
   
-  Serial.println("");
+  //Serial.println("");
   return true;
 }
