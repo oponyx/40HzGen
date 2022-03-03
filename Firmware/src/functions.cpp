@@ -85,6 +85,7 @@ void handleCommands(){
       break;
     case CMD_START:
       Serial.println("CMD start detected");
+      Serial.printf("Freq:%u, Bri:%u, PWM freq:%u\n", Settings.light_freq, Settings.brightness, Settings.pwm_freq);
       Command = CMD_NO_COMMANDS;
       start();
       break;
