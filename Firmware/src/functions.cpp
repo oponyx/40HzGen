@@ -1,4 +1,5 @@
 #include <Arduino.h>
+
 #include "graphic.h"
 #include "settings.h"
 #include "hw_config.h"
@@ -39,6 +40,7 @@ void stop(){
   dispReadyPage();
 }
 
+
 /**
  * @brief Builds a Minutes and Seconds String from Seconds
  * 
@@ -71,6 +73,7 @@ void handleCommands(){
   switch(Command){
     case CMD_SAVE_SETTING_AND_REBOOT:
       Serial.println("CMD Save Settings and Reboot detected");
+      Command = CMD_NO_COMMANDS;
       delay(1000);
       SettingsWrite();
       ESP.restart();

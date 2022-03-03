@@ -48,6 +48,28 @@ const char index_page[] PROGMEM = R"rawliteral(
         transition-duration: 0.4s;
         cursor: pointer;
       }
+      button-green {
+        border: 0;
+        border-radius: 0.3rem;
+        background: #05ec24;
+        width: 100%;
+        color: #faffff;
+        line-height: 2.4rem;
+        font-size: 1.2rem;
+        transition-duration: 0.4s;
+        cursor: pointer;
+      }
+      button-red {
+        border: 0;
+        border-radius: 0.3rem;
+        background: #ee0909;
+        width: 100%;
+        color: #faffff;
+        line-height: 2.4rem;
+        font-size: 1.2rem;
+        transition-duration: 0.4s;
+        cursor: pointer;
+      }
       .units { font-size: 0.7rem; }
       .param-labels{
         font-size: 1.0rem;
@@ -78,10 +100,10 @@ const char index_page[] PROGMEM = R"rawliteral(
         <tr>
         <td style="width: 10%"></td>     
         <td  style="width: 40%">     
-            <button disabled="true" id="BUTT_START" onclick="start()" class="button" style="background: #f50404; width: 100%">Start</Button>
+            <button disabled="true" id="BUTT_START" onclick="start()" class="button-green" style="width: 100%">Start</Button>
         </td>
         <td style="width: 40%">     
-            <button disabled="true" id="BUTT_STOP" onclick="stop()" class="button" style="background: #03df28;width: 100%">Stop</Button>
+            <button disabled="true" id="BUTT_STOP" onclick="stop()" class="button-red" style="width: 100%">Stop</Button>
         </td>
         <td style="width: 10%"></td>     
         </tr>
@@ -96,7 +118,7 @@ const char index_page[] PROGMEM = R"rawliteral(
     <tbody>
         <tr>
             <td colspan="3" style="text-align:center";>     
-                <span class="param-labels">Brightness</span>
+                <span class="param-labels">Brightness:</span><span class="param-labels" id="BRIGHTNESS">val</span><span class="units">%</span>
             </td>
         </tr>
         <tr>
@@ -106,7 +128,7 @@ const char index_page[] PROGMEM = R"rawliteral(
         </tr>
         <tr>
             <td colspan="3" style="text-align:center";>
-            <span class="param-labels" id="BRIGHTNESS">val</span><span class="units">%</span>
+                <button id="BUTT_SUBMIT_BRI" disabled="true" onclick="set_bri()">Submit</button>
             </td>
         </tr>
         <td>     
@@ -166,7 +188,6 @@ const char index_page[] PROGMEM = R"rawliteral(
         xhttp.onreadystatechange = function() {
           if (this.readyState == 4 && this.status == 200) {
             // get json data
-            //json_msg=data;
             console.log("Received data:" + this.responseText);
             var json_msg = JSON.parse(this.responseText);
             if(json_msg.result=="OK"){
@@ -184,7 +205,6 @@ const char index_page[] PROGMEM = R"rawliteral(
         xhttp.onreadystatechange = function() {
           if (this.readyState == 4 && this.status == 200) {
             // get json data
-            //json_msg=data;
             console.log("Received data:" + this.responseText);
             var json_msg = JSON.parse(this.responseText);
             if(json_msg.result=="OK"){
@@ -201,30 +221,35 @@ const char index_page[] PROGMEM = R"rawliteral(
 
       brightness_slider.oninput = function() {
         document.getElementById("BRIGHTNESS").innerHTML = this.value;
+        document.getElementById("BUTT_SUBMIT_BRI").disabled=false;
+      } 
+
+      function set_bri(){
         var xhttp = new XMLHttpRequest();
+        var bri_slider_value = document.getElementById("BRIGHTNESS_SLIDER").value;
         xhttp.onreadystatechange = function() {
           if (this.readyState == 4 && this.status == 200) {
             // get json data
-            //json_msg=data;
             console.log("Received data:" + this.responseText);
             var json_msg = JSON.parse(this.responseText);
-            document.getElementById("BRIGHTNESS_SLIDER").value = json_msg.brightness;
+            bri_slider_value = json_msg.brightness;
             document.getElementById("BRIGHTNESS").innerHTML = json_msg.brightness;
+            document.getElementById("BUTT_SUBMIT_BRI").disabled=true;
+
           }
         };
-        var Data2Send= new FormData(); 
-        Data2Send.append("brightness",  this.value);
+        var Data2Send = new FormData(); 
+        Data2Send.append("brightness",  bri_slider_value);
         console.log("Sending data:" + Data2Send);
         xhttp.open("POST", "/set_bri", true);
         xhttp.send(Data2Send);
-      } 
+      }
 
       setInterval(function ( ) {
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
           if (this.readyState == 4 && this.status == 200) {
             // get json data
-            //json_msg=data;
             console.log("Received data:" + this.responseText);
             var json_msg = JSON.parse(this.responseText);
             document.getElementById("BRIGHTNESS_SLIDER").value = json_msg.brightness;
@@ -390,7 +415,6 @@ const char settings_page[] PROGMEM = R"rawliteral(
         xhttp.onreadystatechange = function() {
           if (this.readyState == 4 && this.status == 200) {
             // get json data
-            //json_msg=data;
             console.log("Received data:" + this.responseText);
             var json_msg = JSON.parse(this.responseText);
             if(json_msg.result=="OK"){
@@ -469,7 +493,7 @@ uint16_t web_serv_setup(){
       Serial.printf("WEB sent response\n");
       Command = CMD_STOP; // Stop command
     });
-    web_server.on("/set_bri", HTTP_GET, [](AsyncWebServerRequest *request){
+    web_server.on("/set_bri", HTTP_POST, [](AsyncWebServerRequest *request){
       long val;
       Serial.printf("WEB: HTTP-GET request '/set_bri' from %s\n", request->client()->remoteIP().toString().c_str());
       int params = request->params();
@@ -477,15 +501,13 @@ uint16_t web_serv_setup(){
         AsyncWebParameter* p = request->getParam(i);
         if(p->isPost()){
           Serial.printf("set_bri page received->POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
-          if ( p->name() == "BRIGHTNESS" ){
-              val = p->value().toInt();
-              // check min/max 
-              val = ( val < MIN_LIGHT_FREQ ) ? MIN_LIGHT_FREQ : val ;
-              val = ( val > MAX_LIGHT_FREQ ) ? MAX_LIGHT_FREQ : val ;
-              Settings.brightness = val;
-
-            }
-
+          if ( p->name() == "brightness" ){
+            val = p->value().toInt();
+            // check min/max 
+            val = ( val < MIN_LIGHT_FREQ ) ? MIN_LIGHT_FREQ : val ;
+            val = ( val > MAX_LIGHT_FREQ ) ? MAX_LIGHT_FREQ : val ;
+            Settings.brightness = val;
+          }
         }
       }
       AsyncJsonResponse * resp = new AsyncJsonResponse();
@@ -498,7 +520,6 @@ uint16_t web_serv_setup(){
       resp->setLength();
       request->send(resp);
       Serial.printf("WEB sent response\n");
-      Command = CMD_STOP; // Stop command
     });
     // send status json message
     web_server.on("/device_status", HTTP_GET, [](AsyncWebServerRequest *request){

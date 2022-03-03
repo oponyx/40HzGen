@@ -16,7 +16,6 @@
 #include "log.h"
 #include "graphic.h"
 #include "settings.h"
-#include "logo.h"
 #include "wifi.h"
 #include "web_serv.h"
 #include "hw_config.h"
@@ -31,7 +30,7 @@
 
 
 
-ESP8266TimerInterrupt ITimer; // Timer Interrupt used to call the ISR
+ESP8266TimerInterrupt InterruptTimer; // Timer Interrupt used to call the ISR
 bool bDisplayUpdated;         // 'Display is updated' flag
 bool bLastLightStatus;
 
@@ -149,12 +148,7 @@ void setup() {
   Serial.printf("PWM Freq:%u\n", Settings.pwm_freq);
 
   display_init();
-  display.clearDisplay();
-  display.drawBitmap(
-    (display.width()  - LOGO_WIDTH ) / 2,
-    (display.height() - LOGO_HEIGHT) / 2,
-    logo_bmp, LOGO_WIDTH, LOGO_HEIGHT, 1);
-  display.display();
+  dispLogoPage();
   delay(1000);
 
   display.clearDisplay();
@@ -193,14 +187,17 @@ void setup() {
 
 
   // per aggiornamenti OTA
+  Serial.printf("Starting OTA service...");
   setupOTA();
+  Serial.println("OK");
 
   // setup interrupt
-  if (ITimer.attachInterrupt(Settings.light_freq * 2, TimedISR)){
-    Serial.println("Starting  ITimer OK, millis() = " + String(millis()));
+    Serial.printf("Setting up interrupt timer...");
+if (InterruptTimer.attachInterrupt(Settings.light_freq * 2, TimedISR)){
+    Serial.println("OK, time = " + String(millis()));
   }
   else{
-    Serial.println("Can't set ITimer. Select another freq. or timer");
+    Serial.println("Error setting Timed Interrupt. Bad freq?");
   }
   
   setupIO();

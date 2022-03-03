@@ -36,7 +36,6 @@
 #define CMD_SAVE_SETTING_AND_REBOOT   0x0004
 
 
-
 uint8_t SettingsRead();
 uint8_t restoreDefaultSettings();
 uint8_t SettingsWrite();

@@ -3,6 +3,7 @@
 #include "settings.h"
 #include "wifi.h"
 #include "config.h"
+#include "logo.h"
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
@@ -62,5 +63,14 @@ void dispWorkingPage(){
   display.println("Working");
   display.println(minutesSecondsRem);
   //Serial.println(String(rem_time) + " " + minutesSecondsRem);
+  display.display();
+}
+
+void dispLogoPage(){
+  display.clearDisplay();
+  display.drawBitmap(
+    (display.width()  - LOGO_WIDTH ) / 2,
+    (display.height() - LOGO_HEIGHT) / 2,
+    logo_bmp, LOGO_WIDTH, LOGO_HEIGHT, 1);
   display.display();
 }

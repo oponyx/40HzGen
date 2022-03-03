@@ -28,5 +28,6 @@ void display_init() ;
 void dispWorkingPage();
 void dispReadyPage();
 void dispInfoPage();
+void dispLogoPage();
 
 #endif // _GRAPHIC_H_
