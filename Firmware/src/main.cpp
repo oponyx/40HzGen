@@ -13,6 +13,8 @@
 
 #include <ArduinoOTA.h>
 
+#include "globals.h"
+#include "config.h"
 #include "log.h"
 #include "graphic.h"
 #include "settings.h"
@@ -21,35 +23,33 @@
 #include "hw_config.h"
 #include "functions.h"
 #include "error_codes.h"
+#include "button.hpp"
 
 // USING_TIM_DIV1 min 5hz Light Frequence could be used 
 #define USING_TIM_DIV1                true           // for shortest and most accurate timer
 #define USING_TIM_DIV16               false          // for medium time and medium accurate timer
 #define USING_TIM_DIV256              false          // for longest timer but least accurate. Default
-#include <ESP8266TimerInterrupt.h>
 
 
-
-ESP8266TimerInterrupt InterruptTimer; // Timer Interrupt used to call the ISR
 bool bDisplayUpdated;         // 'Display is updated' flag
 bool bLastLightStatus;
+u_long lastLigtSwitch;
 
-/**
- * @brief Timed Interrupt Service Routine
- * 
- * Toggles the outputs
- * 
- * @return IRAM_ATTR 
- */
-IRAM_ATTR void TimedISR() {
-  lastTrigger = millis();
-  if(bWorking){
-    //switch the light on/off
-    //digitalWrite(LIGHT_OUT, !digitalRead(LIGHT_OUT));
-    (bLastLightStatus == false) ? analogWrite(LIGHT_OUT, Settings.brightness) : analogWrite(LIGHT_OUT, 0);
-    bLastLightStatus = !bLastLightStatus;
-  }
-}
+deviceStatus_t Status;
+
+#ifdef NEW_BUTTONS
+Button okButton(OK_BUTTON_PIN, INPUT_PULLUP, HIGH);
+Button cancelButton(CANCEL_BUTTON_PIN, INPUT_PULLUP, HIGH);
+Button upButton(UP_BUTTON_PIN, INPUT_PULLUP, HIGH);
+Button downButton(DOWN_BUTTON_PIN, INPUT_PULLUP, HIGH);
+
+/*
+  okButton = Button(OK_BUTTON_PIN, INPUT_PULLUP, HIGH);
+  cancelButton = Button(CANCEL_BUTTON_PIN, INPUT_PULLUP, HIGH);
+  upButton = Button(UP_BUTTON_PIN, INPUT_PULLUP, HIGH);
+  downButton = Button(DOWN_BUTTON_PIN, INPUT_PULLUP, HIGH);
+  */
+#endif
 
 /**
  * @brief OTA setup function
@@ -93,13 +93,36 @@ void setupOTA(){
  */
 void setupIO(){
   pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(LIGHT_OUT, OUTPUT);
-  pinMode(AUDIO_OUT, OUTPUT);
+  pinMode(LIGHT_OUT_PIN, OUTPUT);
+  pinMode(AUDIO_OUT_PIN, OUTPUT);
 
-  pinMode(OK_BUTTON, INPUT_PULLUP);
-  pinMode(CANCEL_BUTTON, INPUT_PULLUP);
-  pinMode(UP_BUTTON, INPUT_PULLUP);
-  pinMode(DOWN_BUTTON, INPUT_PULLUP);
+#ifdef NEW_BUTTONS
+
+  okButton.onButtonShortPressed(buttonShortPressed);
+  okButton.onButtonLongPressed(buttonLongPressed);
+  okButton.onButtonPressed(buttonPressed);
+  okButton.onButtonReleased(buttonReleased);
+
+  cancelButton.onButtonShortPressed(buttonShortPressed);
+  cancelButton.onButtonLongPressed(buttonLongPressed);
+
+  upButton.onButtonShortPressed(buttonShortPressed);
+  upButton.onButtonLongPressed(buttonLongPressed);
+
+  downButton.onButtonShortPressed(buttonShortPressed);
+  downButton.onButtonLongPressed(buttonLongPressed);
+
+  okButton.begin();
+  cancelButton.begin();
+  upButton.begin();
+  downButton.begin();
+
+#else
+  pinMode(OK_BUTTON_PIN, INPUT_PULLUP);
+  pinMode(CANCEL_BUTTON_PIN, INPUT_PULLUP);
+  pinMode(UP_BUTTON_PIN, INPUT_PULLUP);
+  pinMode(DOWN_BUTTON_PIN, INPUT_PULLUP);
+#endif
 
   analogWriteFreq(Settings.pwm_freq);
   analogWriteRange(MAX_BRIGHTNESS);
@@ -110,7 +133,7 @@ void setupIO(){
  * 
  */
 void setup() {
-  bWorking = false;
+  Status = STATUS_IDLE;
   bHalfSecond=false;
 
   Serial.begin(115200);
@@ -118,18 +141,18 @@ void setup() {
   Serial.println("");
   Serial.println("Serial ok");
   
-  if(digitalRead(OK_BUTTON)){
+  if(digitalRead(OK_BUTTON_PIN)){
     Serial.println("Restoring default setup...");
     restoreDefaultSettings();
   }
 
-  Serial.println("Loading Settings");
+  Serial.printf("Loading Settings..");
   uint8_t result = SettingsRead();
   if( result != 0 ){
     switch ( result )
     {
     case ERROR_SETTINGS_CRC:
-        Serial.println("Error: Bad CRC on settings datas\nResoring default settings.");
+        Serial.println("\nError: Bad CRC on settings datas\nResoring default settings.");
         restoreDefaultSettings();
       break;
     
@@ -137,15 +160,8 @@ void setup() {
       break;
     }
   }else{
-    Serial.println("Settings loaded.");
+    Serial.println("Ok");
   }
-  Serial.printf("WIFI SSID:%s\n", Settings.wifi_ssid);
-  Serial.printf("WIFI PWD:%s\n", Settings.wifi_psw);
-  Serial.printf("AP SSID:%s\n", Settings.ap_ssid);
-  Serial.printf("AP PWD:%s\n", Settings.ap_psw);
-  Serial.printf("On time:%u\n", Settings.on_time);
-  Serial.printf("Brightness:%u\n", Settings.brightness);
-  Serial.printf("PWM Freq:%u\n", Settings.pwm_freq);
 
   display_init();
   dispLogoPage();
@@ -156,20 +172,20 @@ void setup() {
   display.setTextColor(WHITE);        // Draw white text
   display.setCursor(0,0);             // Start at top-left corner
 
-  display.println(F("Setting up AP..."));
-  if(AP_setup()){  
-    display.println(F("AP ko!!"));
-  }
-  else{
-    Serial.print("AP IP address = ");
-    Serial.println(WiFi.softAPIP());
-    display.println(WiFi.softAPIP());
-  }
   
   display.printf("Setting up WIFI...");
   Serial.printf("Setting up WIFI...");
   if(wifi_setup()){
     Serial.println("WIFI connection KO!");   
+    display.println(F("Setting up AP..."));
+    if(AP_setup()){  
+      display.println(F("AP ko!!"));
+    }
+    else{
+      Serial.print("AP IP address = ");
+      Serial.println(WiFi.softAPIP());
+      display.println(WiFi.softAPIP());
+    }
   }
   else{
     Serial.println("OK!");
@@ -177,6 +193,7 @@ void setup() {
     Serial.print("WIFI IP Address is: ");
     Serial.println(WiFi.localIP());// Print the IP address
   }
+
 
   Serial.printf("Starting web server...");
   if (web_serv_setup() == NO_ERRORS) {
@@ -190,22 +207,24 @@ void setup() {
   Serial.printf("Starting OTA service...");
   setupOTA();
   Serial.println("OK");
-
-  // setup interrupt
-    Serial.printf("Setting up interrupt timer...");
-if (InterruptTimer.attachInterrupt(Settings.light_freq * 2, TimedISR)){
-    Serial.println("OK, time = " + String(millis()));
-  }
-  else{
-    Serial.println("Error setting Timed Interrupt. Bad freq?");
-  }
   
   setupIO();
-  digitalWrite(LIGHT_OUT,HIGH); // test output
+  digitalWrite(LIGHT_OUT_PIN,HIGH); // test output
   dispInfoPage();
   delay(1000);
   dispReadyPage();
-  digitalWrite(LIGHT_OUT,LOW); // test output end
+  digitalWrite(LIGHT_OUT_PIN,LOW); // test output end
+  Serial.printf("WIFI SSID:%s\n", Settings.wifi_ssid);
+  Serial.printf("WIFI PWD:%s\n", Settings.wifi_psw);
+  Serial.printf("AP SSID:%s\n", Settings.ap_ssid);
+  Serial.printf("AP PWD:%s\n", Settings.ap_psw);
+  Serial.printf("Light Freq:%u\n", Settings.light_freq);
+  Serial.printf("On time:%u\n", Settings.on_time);
+  Serial.printf("Brightness:%u\n", Settings.brightness);
+  Serial.printf("PWM Freq:%u\n", Settings.pwm_freq);
+
+  test();
+  testButtonHandle();
 }
 
 /**
@@ -213,10 +232,15 @@ if (InterruptTimer.attachInterrupt(Settings.light_freq * 2, TimedISR)){
  * 
  */
 void loop() {
+#ifndef NEW_BUTTONS
   handleButtons();
+#else
+  okButton.handle();
+  cancelButton.handle();
+  upButton.handle();
+  downButton.handle();
+#endif
   handleCommands();
-  ArduinoOTA.handle();
-
   if((millis()-mills_2)>499){
     mills_2=millis();
     bHalfSecond=!bHalfSecond;
@@ -226,8 +250,17 @@ void loop() {
   digitalWrite(LED_BUILTIN, (bHalfSecond == true) ? LOW : HIGH );   
 
 
-  if(bWorking){
+  if( Status == deviceStatus_t::STATUS_WORKING ){
+    // light switch
+    u_long now = micros();
+    u_long diff = now - lastLigtSwitch;
+    if( (diff) > hertz2us(Settings.light_freq) ){
+      lastLigtSwitch = now ; 
+      (bLastLightStatus == false) ? analogWrite(LIGHT_OUT_PIN, (int)(Settings.brightness)) : analogWrite(LIGHT_OUT_PIN, 0);
+      bLastLightStatus = !bLastLightStatus;
+    }
     // Display update
+    /*
     if(bHalfSecond){
       display.clearDisplay();
       bDisplayUpdated=false;
@@ -237,12 +270,16 @@ void loop() {
         bDisplayUpdated=true;
       }
     } //bHalfSecond
+    */
     // check for working timeout
-    int millis_count = millis() - start_millis;
-    if((Settings.on_time * 60 * 1000)<millis_count){
+    rem_time = (Settings.on_time * 60 - ((millis() - start_millis) / 1000)); // 14 uS
+    if(rem_time<=0){
       Serial.println("Timed Out");
       stop();
     }  
+  }
+  else{ // not working
+      ArduinoOTA.handle();
   }
   display.display();
   

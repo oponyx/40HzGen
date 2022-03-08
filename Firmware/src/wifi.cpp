@@ -2,6 +2,7 @@
 #include <ESP8266WiFi.h>
 #include "wifi.h"
 #include "settings.h"
+#include "globals.h"
 
 /**
  * @brief Call this function to start th AP mode
@@ -37,17 +38,19 @@ bool AP_setup(){
  * @return false if WIFI connected 
  */
 bool wifi_setup(){
-  WiFi.begin(Settings.wifi_ssid, Settings.wifi_psw);
-  for (int iRetry=0; iRetry<50; iRetry++)
- // while (WiFi.status() != WL_CONNECTED) 
-  {
-    if((WiFi.status() == WL_CONNECTED)){
-        return false;
+    if(String( Settings.wifi_ssid ) == String( WIFI_DEFAULT_SSID )){
+        //return true;
     }
-     delay(500);
-     Serial.print(".");
-  }
-  
-  //Serial.println("");
-  return true;
+    WiFi.begin(Settings.wifi_ssid, Settings.wifi_psw);
+    for (int iRetry=0; iRetry<50; iRetry++)
+    // while (WiFi.status() != WL_CONNECTED) 
+    {
+        if((WiFi.status() == WL_CONNECTED)){
+            return false;
+        }
+        delay(500);
+        Serial.print(".");
+    }
+    //Serial.println("");
+    return true;
 }

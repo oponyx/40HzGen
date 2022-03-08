@@ -3,10 +3,12 @@
 
 #include "web_serv.h"
 #include "graphic.h"
+#include "globals.h"
 #include "settings.h"
 #include "hw_config.h"
 #include "functions.h"
 #include "error_codes.h"
+#include "config.h"
 
 AsyncWebServer web_server(80); // the Generator web server
 
@@ -48,7 +50,7 @@ const char index_page[] PROGMEM = R"rawliteral(
         transition-duration: 0.4s;
         cursor: pointer;
       }
-      button-green {
+      .button-green {
         border: 0;
         border-radius: 0.3rem;
         background: #05ec24;
@@ -59,7 +61,7 @@ const char index_page[] PROGMEM = R"rawliteral(
         transition-duration: 0.4s;
         cursor: pointer;
       }
-      button-red {
+      .button-red {
         border: 0;
         border-radius: 0.3rem;
         background: #ee0909;
@@ -123,7 +125,7 @@ const char index_page[] PROGMEM = R"rawliteral(
         </tr>
         <tr>
             <td colspan="3" style="text-align:center";>
-                <input style="width: 100%;" type="range" id="BRIGHTNESS_SLIDER" name="BRIGHTNESS_SLIDER" min="10" max="100" >
+                <input style="width: 100%;" type="range" id="BRIGHTNESS_SLIDER" name="BRIGHTNESS_SLIDER" min="1" max="100" >
             </td>
         </tr>
         <tr>
@@ -218,6 +220,7 @@ const char index_page[] PROGMEM = R"rawliteral(
       }
 
       var brightness_slider = document.getElementById("BRIGHTNESS_SLIDER");  
+      var slider_changed = false;
 
       brightness_slider.oninput = function() {
         document.getElementById("BRIGHTNESS").innerHTML = this.value;
@@ -235,7 +238,6 @@ const char index_page[] PROGMEM = R"rawliteral(
             bri_slider_value = json_msg.brightness;
             document.getElementById("BRIGHTNESS").innerHTML = json_msg.brightness;
             document.getElementById("BUTT_SUBMIT_BRI").disabled=true;
-
           }
         };
         var Data2Send = new FormData(); 
@@ -274,6 +276,7 @@ const char index_page[] PROGMEM = R"rawliteral(
             document.getElementById("UP_BUTTON").innerHTML = json_msg.upButtonStatus;
             document.getElementById("DOWN_BUTTON").innerHTML = json_msg.downButtonStatus;
             document.getElementById("CANCEL_BUTTON").innerHTML = json_msg.cancelButtonStatus;
+            slider_changed = false
           }
         };
         xhttp.open("GET", "/device_status", true);
@@ -311,12 +314,10 @@ const char rebooting_page[] PROGMEM = R"rawliteral(
   <body>
     <h2>Rebooting, please wait, you'll be redirected in 10 seconds...</h2>
     <script>
-      $(document).ready(function () {
-          window.setTimeout(function () {
-              location.href = "/index.html";
-          }, 8000);
-      });  
-    </script>
+     setTimeout(function(){
+        window.location = "/index.html";
+     }, 8000);
+    /script>
   </body>
 </html>
 )rawliteral";
@@ -377,7 +378,7 @@ const char settings_page[] PROGMEM = R"rawliteral(
           <input type="text" id="AP_PSW" name="AP_PSW" value="%AP_PSW%">
           <br>
           <label for="LIGHT_FREQ" class="param-labels">LIGHT_FREQ</label>
-          <input type="number" id="LIGHT_FREQ" name="LIGHT_FREQ" min="5" max="100" value="%LIGHT_FREQ%"><span class="units">Hz</span>
+          <input type="number" id="LIGHT_FREQ" name="LIGHT_FREQ" min="1" max="100" value="%LIGHT_FREQ%"><span class="units">Hz</span>
           <br>
           <label for="ON_TIME" class="param-labels">ON TIME</label>
           <input type="number" id="ON_TIME" name="ON_TIME" min="2" max="100" value="%ON_TIME%"><span class="units">Min</span>
@@ -504,8 +505,8 @@ uint16_t web_serv_setup(){
           if ( p->name() == "brightness" ){
             val = p->value().toInt();
             // check min/max 
-            val = ( val < MIN_LIGHT_FREQ ) ? MIN_LIGHT_FREQ : val ;
-            val = ( val > MAX_LIGHT_FREQ ) ? MAX_LIGHT_FREQ : val ;
+            val = ( val < MIN_BRIGHTNESS ) ? MIN_BRIGHTNESS : val ;
+            val = ( val > MAX_BRIGHTNESS ) ? MAX_BRIGHTNESS : val ;
             Settings.brightness = val;
           }
         }
@@ -527,9 +528,9 @@ uint16_t web_serv_setup(){
       AsyncJsonResponse * resp = new AsyncJsonResponse();
       resp->addHeader("Server", "ESP Async Web Server");
       JsonObject root = resp->getRoot();
-      root["working"] = bWorking;
-      root["light_status"] = (bWorking == true) ? "ON" : "OFF";
-      root["rem_time"] = (bWorking == true) ? rem_time : 0;
+      root["working"] = (Status == deviceStatus_t::STATUS_WORKING) ? true : false;
+      root["light_status"] = (Status == deviceStatus_t::STATUS_WORKING) ? "ON" : "OFF";
+      root["rem_time"] = (Status == deviceStatus_t::STATUS_WORKING) ? rem_time : 0;
       root["audio_status"] = "unknown";
       root["light_freq"] = Settings.light_freq;
       root["free_heap"] = ESP.getFreeHeap();
@@ -537,10 +538,10 @@ uint16_t web_serv_setup(){
       root["up_time"] = millis();
       root["brightness"] = Settings.brightness;
       root["pwm_freq"] = Settings.pwm_freq;
-      root["okButtonStatus"] = okButtonStatus;
-      root["cancelButtonStatus"] = cancelButtonStatus;
-      root["upButtonStatus"] = upButtonStatus;
-      root["downButtonStatus"] = downButtonStatus;
+      root["okButtonStatus"] = ( okButton.status() == true ) ? "true" : "false";
+      root["cancelButtonStatus"] = ( cancelButton.status() == true ) ? "true" : "false";
+      root["upButtonStatus"] = ( upButton.status() == true ) ? "true" : "false";
+      root["downButtonStatus"] = ( downButton.status() == true ) ? "true" : "false";
 
       resp->setLength();
       request->send(resp);

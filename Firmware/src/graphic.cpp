@@ -55,14 +55,13 @@ void dispInfoPage(){
  */
 void dispWorkingPage(){
   display.clearDisplay();
-  unsigned long rem_time = (Settings.on_time * 60 - ((millis() - start_millis) / 1000));
-  String minutesSecondsRem;
-  getMinutesAndSeconds(rem_time, minutesSecondsRem);
+//  rem_time = (Settings.on_time * 60 - ((millis() - start_millis) / 1000));
+//  String minutesSecondsRem;
+//  getMinutesAndSeconds(rem_time, minutesSecondsRem);
   display.setCursor(0,0);
   display.setTextSize(3);            
   display.println("Working");
-  display.println(minutesSecondsRem);
-  //Serial.println(String(rem_time) + " " + minutesSecondsRem);
+//  display.println(minutesSecondsRem);
   display.display();
 }
 

@@ -8,7 +8,7 @@
 #define SETTINGS_VERSION 0x00000010
 #define DEFAULT_FLAG01 0x00
 #define WIFI_DEFAULT_SSID "SSID_NONE"
-#define WIFI_DEFAULT_PASSW "12345678"
+#define WIFI_DEFAULT_PASSW "64164434"
 #define AP_DEFAULT_SSID "40Hz_Gen"
 #define AP_DEFAULT_PASSW "12345678"
 #define DEFAULT_LIGHT_FREQ 40
@@ -17,23 +17,8 @@
 #define DEFAULT_PWM_FREQ 1000
 
 
-#define MIN_LIGHT_FREQ  5
-#define MAX_LIGHT_FREQ  100
-#define MIN_ON_TIME     2
-#define MAX_ON_TIME     100
-#define MIN_BRIGHTNESS  10
-#define MAX_BRIGHTNESS  100
-#define MIN_PWM_FREQ    1000
-#define MAX_PWM_FREQ    50000
 
 
-
-// commands defines
-#define CMD_NO_COMMANDS               0x0000
-#define CMD_REBOOT                    0x0001
-#define CMD_START                     0x0002
-#define CMD_STOP                      0x0003
-#define CMD_SAVE_SETTING_AND_REBOOT   0x0004
 
 
 uint8_t SettingsRead();
@@ -57,12 +42,12 @@ typedef struct {
   uint16_t      crc;                        // crc settings
   uint32_t      version;                    // Settings version  
   uint8_t       flag01;                     // Flag Byte Stored in Settings
-  char          wifi_ssid[16];              // Wifi SSID Stored in Setting
+  char          wifi_ssid[24];              // Wifi SSID Stored in Setting
   char          wifi_psw[24];               // Wifi Password Stored in Setting
   char          ap_ssid[16];                // Access Poin Mode SSID name Stored in Setting
   char          ap_psw[16];                 // Access Poin Mode Password Stored in Setting
-  uint16_t      light_freq;                 // Gamma Frequence Stored in Setting
-  uint16_t      on_time;                    // OnTime Stored in Setting
+  uint8_t       light_freq;                 // Gamma Frequence Stored in Setting
+  uint8_t       on_time;                    // OnTime Stored in Setting
   uint8_t       brightness;                 // light brightness 10-100%
   uint32_t      pwm_freq;                   // light pwm frequence
 } TSettings;
