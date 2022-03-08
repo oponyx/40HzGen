@@ -52,13 +52,9 @@ uint8_t SettingsWrite(){
 uint8_t restoreDefaultSettings(){
   Settings.version = SETTINGS_VERSION;
   Settings.flag01 = DEFAULT_FLAG01;
-//  ((String)WIFI_DEFAULT_SSID).toCharArray(Settings.wifi_ssid,sizeof(WIFI_DEFAULT_SSID));
   strcpy(Settings.wifi_ssid,WIFI_DEFAULT_SSID);
-//  ((String)WIFI_DEFAULT_PASSW).toCharArray(Settings.wifi_psw,sizeof(WIFI_DEFAULT_PASSW));
   strcpy(Settings.wifi_psw, WIFI_DEFAULT_PASSW);
-//  ((String)AP_DEFAULT_SSID).toCharArray(Settings.ap_ssid,sizeof(AP_DEFAULT_SSID));
   strcpy(Settings.ap_ssid, AP_DEFAULT_SSID);
-//  ((String)AP_DEFAULT_PASSW).toCharArray(Settings.ap_psw,sizeof(AP_DEFAULT_PASSW));
   strcpy(Settings.ap_psw, AP_DEFAULT_PASSW);
   Settings.light_freq = DEFAULT_LIGHT_FREQ;
   Settings.on_time = DEFAULT_ON_TIME;
