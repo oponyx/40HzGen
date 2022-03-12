@@ -1,0 +1,8 @@
+#ifndef _CONFIG_OVERRIDE_H_
+#define _CONFIG_OVERRIDE_H_
+
+#define WIFI_DEFAULT_SSID "SSID_NAME"
+#define WIFI_DEFAULT_PASSW "1234567890"
+
+//#define OLED_I2C_ADRRESS 0x3b
+#endif

@@ -4,3 +4,4 @@
 .vscode/launch.json
 .vscode/ipch
 .history
+src/config_override.h

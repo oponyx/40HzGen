@@ -69,7 +69,9 @@ void test(){
 void testButtonHandle(){
   u_long n1= micros();
   //hertz2us(80);
+#ifndef BUTTON_USE_INTERRUPT
   okButton.handle();
+#endif
   u_long n2 = micros();
   Serial.printf("usec testButtonHandle():%lu\n", n2-n1);
 }

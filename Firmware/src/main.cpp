@@ -13,6 +13,7 @@
 
 #include <ArduinoOTA.h>
 
+#include "config_override.h"
 #include "globals.h"
 #include "config.h"
 #include "log.h"
@@ -140,7 +141,7 @@ void setup() {
   // load settings
   Serial.println("");
   Serial.println("Serial ok");
-  
+  // restore default settings if okButton pressed at powerup
   if(digitalRead(OK_BUTTON_PIN)){
     Serial.println("Restoring default setup...");
     restoreDefaultSettings();
@@ -163,7 +164,12 @@ void setup() {
     Serial.println("Ok");
   }
 
-  display_init();
+  Serial.printf("Setting up Display...");
+  if(display_init()){
+    Serial.println("FAIL!");
+  }
+  Serial.println("Ok.");
+ 
   dispLogoPage();
   delay(1000);
 
@@ -235,10 +241,7 @@ void loop() {
 #ifndef NEW_BUTTONS
   handleButtons();
 #else
-  okButton.handle();
-  cancelButton.handle();
-  upButton.handle();
-  downButton.handle();
+  okButton.handle(); // only button handling always checked, other buttons only when not working
 #endif
   handleCommands();
   if((millis()-mills_2)>499){
@@ -279,9 +282,13 @@ void loop() {
     }  
   }
   else{ // not working
+      cancelButton.handle();
+      upButton.handle();
+      downButton.handle();
+
       ArduinoOTA.handle();
   }
-  display.display();
+  //display.display();
   
 }
 

@@ -15,16 +15,13 @@
 #define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
 extern Adafruit_SSD1306 display;
 
+#ifndef OLED_I2C_ADRRESS
 #define OLED_I2C_ADRRESS 0x3c
-
-#define LOGO_HEIGHT   64
-#define LOGO_WIDTH    128
+#endif
 
 
-// '40hzGen', 128x64px
 
-
-void display_init() ;
+bool display_init() ;
 void dispWorkingPage();
 void dispReadyPage();
 void dispInfoPage();

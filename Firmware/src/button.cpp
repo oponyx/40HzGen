@@ -31,7 +31,7 @@
         return 0;
     }
 
-    void Button::handle(){
+    void Button::handle(){ //26uS
         _button_T.lastRead = ( (bool)digitalRead( _button_T.pin ) == _button_T.buttonActive ) ? true : false;
         if ( _button_T.lastRead != _button_T.lastState ){
             _button_T.lastDebounceTime = millis();
