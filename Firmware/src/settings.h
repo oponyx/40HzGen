@@ -6,20 +6,32 @@
 #include <CRC16.h>
 
 #define SETTINGS_VERSION 0x00000010
-#define DEFAULT_FLAG01 0x00
 
-#ifndef WIFI_DEFAULT_SSID
+#ifdef WIFI_DEFAULT_SSID_OVERRIDE
+#define WIFI_DEFAULT_SSID WIFI_DEFAULT_SSID_OVERRIDE
+#else 
 #define WIFI_DEFAULT_SSID "SSID_NONE"
+#define WIFI_SSID_NOT_CONFIGURED "NO-WIFI"
 #endif
 
-#ifndef WIFI_DEFAULT_PASSW
+#ifdef WIFI_DEFAULT_PASSW_OVERRIDE
+#define WIFI_DEFAULT_PASSW WIFI_DEFAULT_PASSW_OVERRIDE
+#else
 #define WIFI_DEFAULT_PASSW "12345678"
+#endif
+
+#ifdef AUTOSTART_OVERRIDE
+#define AUTOSTART AUTOSTART_OVERRIDE
+#else
+#define AUTOSTART false
 #endif
 
 #define AP_DEFAULT_SSID "40Hz_Gen"
 #define AP_DEFAULT_PASSW "12345678"
 #define DEFAULT_LIGHT_FREQ 40
+#ifndef DEFAULT_ON_TIME
 #define DEFAULT_ON_TIME 60
+#endif
 #define DEFAULT_BRIGHTNESS 100
 #define DEFAULT_PWM_FREQ 1000
 
@@ -36,19 +48,19 @@ uint16_t SettingsCRC();
 typedef union {
   uint8_t data;
   struct {
-  uint8_t type : 3;
-  uint8_t invert : 1;
-  uint8_t spare4 : 1;
-  uint8_t spare5 : 1;
-  uint8_t spare6 : 1;
-  uint8_t spare7 : 1;
+  uint8_t type      : 3;
+  uint8_t autostart : 1;
+  uint8_t spare1    : 1;
+  uint8_t spare2    : 1;
+  uint8_t spare3    : 1;
+  uint8_t spare4    : 1;
   };
-} flag01;
+} flags;
 
 typedef struct {
   uint16_t      crc;                        // crc settings
   uint32_t      version;                    // Settings version  
-  uint8_t       flag01;                     // Flag Byte Stored in Settings
+  flags         settingFlags;                      // Flag Byte Stored in Settings
   char          wifi_ssid[24];              // Wifi SSID Stored in Setting
   char          wifi_psw[24];               // Wifi Password Stored in Setting
   char          ap_ssid[16];                // Access Poin Mode SSID name Stored in Setting

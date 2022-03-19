@@ -1,3 +1,4 @@
+#include "config_override.h"
 #include "settings.h"
 #include "log.h"
 #include "error_codes.h"
@@ -51,7 +52,7 @@ uint8_t SettingsWrite(){
  */
 uint8_t restoreDefaultSettings(){
   Settings.version = SETTINGS_VERSION;
-  Settings.flag01 = DEFAULT_FLAG01;
+  Settings.settingFlags.autostart = AUTOSTART;
   strcpy(Settings.wifi_ssid,WIFI_DEFAULT_SSID);
   strcpy(Settings.wifi_psw, WIFI_DEFAULT_PASSW);
   strcpy(Settings.ap_ssid, AP_DEFAULT_SSID);

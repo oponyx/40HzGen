@@ -1,24 +1,120 @@
 #include <Arduino.h>
-
-#include "graphic.h"
+#include <ArduinoOTA.h>
+#include "hw_config.h"
 #include "globals.h"
 #include "settings.h"
-#include "hw_config.h"
 #include "config.h"
 #include "functions.h"
+#include "web_serv.h"
+#ifdef LCD_POPULATED
+#include "graphic.h"
+#endif
 
 bool bHalfSecond;             // Half a second beat
 
-unsigned long start_millis;   
-unsigned long mills_2;
-unsigned long lastTrigger;
-unsigned long rem_time;       // seconds left to the end of the cycle
+u_long start_millis;   
+u_long mills_2;
+u_long semiPeriod;
+u_long lightFreqErrorUs;
+u_long maxLightFreqErrorUs;
+u_long lastTrigger;
+u_long rem_time;       // seconds left to the end of the cycle
 uint16_t Command;             // the variable used to dispatch commands
 
 
 extern deviceStatus_t Status;
 
-#ifdef NEW_BUTTONS
+int indexvReal = 0;
+
+
+/**
+ * @brief OTA setup function
+ * 
+ */
+void setupOTA(){
+  // per aggiornamenti OTA
+  ArduinoOTA.onStart([]() {  
+    String type;  
+    if (ArduinoOTA.getCommand() == U_FLASH) {  
+      type = "sketch";  
+    } else { // U_SPIFFS  
+      type = "filesystem";  
+    }  
+    
+    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()  
+    Serial.println("ArduinoOTA: Start updating " + type);  
+  });  
+  ArduinoOTA.onEnd([]() {
+    Serial.println("\nArduinoOTA: Update End");
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("ArduinoOTA: Progress: %u%%\r", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("ArduinoOTA: Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+    else if (error == OTA_END_ERROR) Serial.println("End Failed");
+  });
+  ArduinoOTA.begin();
+}
+
+/**
+ * @brief Setup Input and Output pins
+ * 
+ * 
+ * 
+ */
+void setupIO(){
+  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(LIGHT_OUT_PIN, OUTPUT);
+#ifdef AUDIO_OUT_PIN
+  pinMode(AUDIO_OUT_PIN, OUTPUT);
+#endif
+
+
+  okButton.onButtonShortPressed(buttonShortPressed);
+  okButton.onButtonLongPressed(buttonLongPressed);
+  okButton.onButtonPressed(buttonPressed);
+  okButton.onButtonReleased(buttonReleased);
+
+#ifdef CANCEL_BUTTON_PIN
+  cancelButton.onButtonShortPressed(buttonShortPressed);
+  cancelButton.onButtonLongPressed(buttonLongPressed);
+#endif
+
+#ifdef UP_BUTTON_PIN
+  upButton.onButtonShortPressed(buttonShortPressed);
+  upButton.onButtonLongPressed(buttonLongPressed);
+#endif
+
+#ifdef DOWN_BUTTON_PIN
+  downButton.onButtonShortPressed(buttonShortPressed);
+  downButton.onButtonLongPressed(buttonLongPressed);
+#endif
+
+  okButton.begin();
+#ifdef CANCEL_BUTTON_PIN
+  cancelButton.begin();
+#endif
+#ifdef UP_BUTTON_PIN
+  upButton.begin();
+#endif
+#ifdef DOWN_BUTTON_PIN
+  downButton.begin();
+#endif
+
+
+  analogWriteFreq(Settings.pwm_freq);
+  analogWriteRange(MAX_BRIGHTNESS);
+}
+
+
+
+extern bool bButtonChanged;
+
 /**
  * @brief buttons callback function
  * 
@@ -34,29 +130,35 @@ void buttonShortPressed(uint8_t btnPin){
         Command = CMD_START;
       }
     break;
+#ifdef CANCEL_BUTTON_PIN
     case CANCEL_BUTTON_PIN:   
       if( Status != deviceStatus_t::STATUS_WORKING ){
         unsigned long lst_millis=millis();
+#ifdef LCD_POPULATED
         while (millis() < lst_millis + INFO_PAGE_DISPLAY_TIME){
           dispInfoPage();
         }
         dispReadyPage();
+#endif
       }
     break;
+#endif    
   }
+  bButtonChanged = false;
+}
+
+void buttonLongPressed(uint8_t btnPin){
+  Serial.printf("buttonLongPressed Callback function called. Argument is:%s\n" , String(btnPin).c_str());
+  bButtonChanged = false;
 }
 
 void buttonPressed(uint8_t btnPin){
-  Serial.printf("buttonPressed Callback function called. Argument is:%s\n" , String(btnPin).c_str());
+  //Serial.printf("buttonPressed Callback function called. Argument is:%s\n" , String(btnPin).c_str());
 }
-void buttonReleased(uint8_t btnPin){
-  Serial.printf("buttonReleased Callback function called. Argument is:%s\n" , String(btnPin).c_str());
-}  
-void buttonLongPressed(uint8_t btnPin){
-  Serial.printf("buttonLongPressed Callback function called. Argument is:%s\n" , String(btnPin).c_str());
 
-}
-#endif
+void buttonReleased(uint8_t btnPin){
+  //Serial.printf("buttonReleased Callback function called. Argument is:%s\n" , String(btnPin).c_str());
+}  
 
 void test(){
   u_long n1= micros();
@@ -69,9 +171,7 @@ void test(){
 void testButtonHandle(){
   u_long n1= micros();
   //hertz2us(80);
-#ifndef BUTTON_USE_INTERRUPT
   okButton.handle();
-#endif
   u_long n2 = micros();
   Serial.printf("usec testButtonHandle():%lu\n", n2-n1);
 }
@@ -90,10 +190,14 @@ u_long hertz2us(uint8_t hertz){
  * 
  */
 void start(){
+  maxLightFreqErrorUs = 0;
+  semiPeriod = hertz2us(Settings.light_freq);
   start_millis = millis();
   Status = deviceStatus_t::STATUS_WORKING;
-  Serial.printf("Freq:%u, Bri:%u, PWM freq:%u uS:%lu\n", Settings.light_freq, Settings.brightness, Settings.pwm_freq, hertz2us(Settings.light_freq));
+  Serial.printf("Freq:%u, Bri:%u, PWM freq:%u uS:%lu\n", Settings.light_freq, Settings.brightness, Settings.pwm_freq, semiPeriod);
+#ifdef LCD_POPULATED
   dispWorkingPage();
+#endif
   Serial.println("Started!!");
 }
 
@@ -106,7 +210,9 @@ void stop(){
   rem_time = 0;
   digitalWrite(LIGHT_OUT_PIN, LOW);
   Serial.println("Stopped!!");
+#ifdef LCD_POPULATED
   dispReadyPage();
+#endif
 }
 
 
@@ -140,6 +246,17 @@ void getMinutesAndSeconds(unsigned long seconds, String &minutesSeconds) {
  */
 void handleCommands(){
   switch(Command){
+    case CMD_GET_SETTINGS_REQ_PARAMS:
+      Command = CMD_NO_COMMANDS;
+      if(getSettingsRequestParam(webRequest)){
+        Serial.println("Settings changed. Rebooting...");
+        webRequest -> send_P(200, "text/html", rebooting_page);
+        Command = CMD_SAVE_SETTING_AND_REBOOT;
+      }else{
+          Serial.println("Settings not changed. Redirecting to index page...");
+          webRequest->send_P(200, "text/html", index_page); 
+      }
+      break;
     case CMD_SAVE_SETTING_AND_REBOOT:
       Serial.println("CMD Save Settings and Reboot detected");
       Command = CMD_NO_COMMANDS;
@@ -168,46 +285,3 @@ void handleCommands(){
   }
 }
 
-
-#ifndef NEW_BUTTONS
-/**
- * @brief Push Button control function
- * 
- */
-void handleButtons(void){  
-
-  bool okButtonStatus = digitalRead(OK_BUTTON_PIN);
-  bool cancelButtonStatus = digitalRead(CANCEL_BUTTON_PIN);
-  bool upButtonStatus = digitalRead(UP_BUTTON_PIN);
-  bool downButtonStatus = digitalRead(DOWN_BUTTON_PIN);
-
-  if(okButtonStatus){
-    delay(10);
-    while (digitalRead(OK_BUTTON_PIN))
-    {
-      ;// wait button release
-    }
-    
-    if( Status == deviceStatus_t::STATUS_WORKING ){
-      Command = CMD_STOP;
-    }else{
-      Command = CMD_START;
-    }
-  }
-
-  if(cancelButtonStatus){
-    if( Status != deviceStatus_t::STATUS_WORKING ){
-      delay(10);
-      while (digitalRead(CANCEL_BUTTON_PIN))
-      {
-        ;// wait button release
-      }    
-      unsigned long lst_millis=millis();
-      while (millis() < lst_millis + INFO_PAGE_DISPLAY_TIME){
-        dispInfoPage();
-      }
-      dispReadyPage();
-    }
-  }
-}
-#endif

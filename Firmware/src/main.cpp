@@ -12,12 +12,12 @@
 #include <stdint.h>
 
 #include <ArduinoOTA.h>
+#include <ESP8266mDNS.h>
 
 #include "config_override.h"
 #include "globals.h"
 #include "config.h"
 #include "log.h"
-#include "graphic.h"
 #include "settings.h"
 #include "wifi.h"
 #include "web_serv.h"
@@ -25,108 +25,32 @@
 #include "functions.h"
 #include "error_codes.h"
 #include "button.hpp"
+#ifdef LCD_POPULATED
+#include "graphic.h"
+#endif
 
-// USING_TIM_DIV1 min 5hz Light Frequence could be used 
-#define USING_TIM_DIV1                true           // for shortest and most accurate timer
-#define USING_TIM_DIV16               false          // for medium time and medium accurate timer
-#define USING_TIM_DIV256              false          // for longest timer but least accurate. Default
 
 
 bool bDisplayUpdated;         // 'Display is updated' flag
 bool bLastLightStatus;
 u_long lastLigtSwitch;
-
+bool bButtonChanged=false;
 deviceStatus_t Status;
 
-#ifdef NEW_BUTTONS
-Button okButton(OK_BUTTON_PIN, INPUT_PULLUP, HIGH);
-Button cancelButton(CANCEL_BUTTON_PIN, INPUT_PULLUP, HIGH);
-Button upButton(UP_BUTTON_PIN, INPUT_PULLUP, HIGH);
-Button downButton(DOWN_BUTTON_PIN, INPUT_PULLUP, HIGH);
-
-/*
-  okButton = Button(OK_BUTTON_PIN, INPUT_PULLUP, HIGH);
-  cancelButton = Button(CANCEL_BUTTON_PIN, INPUT_PULLUP, HIGH);
-  upButton = Button(UP_BUTTON_PIN, INPUT_PULLUP, HIGH);
-  downButton = Button(DOWN_BUTTON_PIN, INPUT_PULLUP, HIGH);
-  */
+Button okButton(OK_BUTTON_PIN, INPUT_PULLUP, OK_BUTT_ACTIVE_LVL);
+#ifdef CANCEL_BUTTON_PIN
+Button cancelButton(CANCEL_BUTTON_PIN, INPUT_PULLUP, CANCEL_BUTT_ACTIVE_LVL);
+#endif
+#ifdef UP_BUTTON_PIN
+Button upButton(UP_BUTTON_PIN, INPUT_PULLUP, UP_BUTT_ACTIVE_LVL);
+#endif
+#ifdef DOWN_BUTTON_PIN
+Button downButton(DOWN_BUTTON_PIN, INPUT_PULLUP, DOWN_BUTT_ACTIVE_LVL);
 #endif
 
-/**
- * @brief OTA setup function
- * 
- */
-void setupOTA(){
-  // per aggiornamenti OTA
-  ArduinoOTA.onStart([]() {  
-    String type;  
-    if (ArduinoOTA.getCommand() == U_FLASH) {  
-      type = "sketch";  
-    } else { // U_SPIFFS  
-      type = "filesystem";  
-    }  
-    
-    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()  
-    Serial.println("Start updating " + type);  
-  });  
-  ArduinoOTA.onEnd([]() {
-    Serial.println("\nUpdate End");
-  });
-  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-  });
-  ArduinoOTA.onError([](ota_error_t error) {
-    Serial.printf("Error[%u]: ", error);
-    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-    else if (error == OTA_END_ERROR) Serial.println("End Failed");
-  });
-  ArduinoOTA.begin();
-}
 
-/**
- * @brief Setup Input and Output pins
- * 
- * 
- * 
- */
-void setupIO(){
-  pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(LIGHT_OUT_PIN, OUTPUT);
-  pinMode(AUDIO_OUT_PIN, OUTPUT);
-
-#ifdef NEW_BUTTONS
-
-  okButton.onButtonShortPressed(buttonShortPressed);
-  okButton.onButtonLongPressed(buttonLongPressed);
-  okButton.onButtonPressed(buttonPressed);
-  okButton.onButtonReleased(buttonReleased);
-
-  cancelButton.onButtonShortPressed(buttonShortPressed);
-  cancelButton.onButtonLongPressed(buttonLongPressed);
-
-  upButton.onButtonShortPressed(buttonShortPressed);
-  upButton.onButtonLongPressed(buttonLongPressed);
-
-  downButton.onButtonShortPressed(buttonShortPressed);
-  downButton.onButtonLongPressed(buttonLongPressed);
-
-  okButton.begin();
-  cancelButton.begin();
-  upButton.begin();
-  downButton.begin();
-
-#else
-  pinMode(OK_BUTTON_PIN, INPUT_PULLUP);
-  pinMode(CANCEL_BUTTON_PIN, INPUT_PULLUP);
-  pinMode(UP_BUTTON_PIN, INPUT_PULLUP);
-  pinMode(DOWN_BUTTON_PIN, INPUT_PULLUP);
-#endif
-
-  analogWriteFreq(Settings.pwm_freq);
-  analogWriteRange(MAX_BRIGHTNESS);
+void ICACHE_RAM_ATTR buttonChangedISR(){
+ bButtonChanged = true;
 }
 
 /**
@@ -142,7 +66,7 @@ void setup() {
   Serial.println("");
   Serial.println("Serial ok");
   // restore default settings if okButton pressed at powerup
-  if(digitalRead(OK_BUTTON_PIN)){
+  if(digitalRead(OK_BUTTON_PIN) == OK_BUTT_ACTIVE_LVL){
     Serial.println("Restoring default setup...");
     restoreDefaultSettings();
   }
@@ -164,12 +88,13 @@ void setup() {
     Serial.println("Ok");
   }
 
+#ifdef LCD_POPULATED
   Serial.printf("Setting up Display...");
   if(display_init()){
     Serial.println("FAIL!");
   }
   Serial.println("Ok.");
- 
+
   dispLogoPage();
   delay(1000);
 
@@ -180,24 +105,27 @@ void setup() {
 
   
   display.printf("Setting up WIFI...");
+#endif
   Serial.printf("Setting up WIFI...");
   if(wifi_setup()){
     Serial.println("WIFI connection KO!");   
-    display.println(F("Setting up AP..."));
-    if(AP_setup()){  
-      display.println(F("AP ko!!"));
-    }
-    else{
-      Serial.print("AP IP address = ");
-      Serial.println(WiFi.softAPIP());
-      display.println(WiFi.softAPIP());
-    }
   }
   else{
     Serial.println("OK!");
     Serial.println("WIFI connection Successful");
     Serial.print("WIFI IP Address is: ");
     Serial.println(WiFi.localIP());// Print the IP address
+  }
+  Serial.println(F("Setting up AP..."));
+  if(AP_setup()){  
+    Serial.println(F("AP ko!!"));
+  }
+  else{
+    Serial.print("AP IP address = ");
+    Serial.println(WiFi.softAPIP());
+#ifdef LCD_POPULATED
+    display.println(WiFi.softAPIP());
+#endif
   }
 
 
@@ -216,9 +144,11 @@ void setup() {
   
   setupIO();
   digitalWrite(LIGHT_OUT_PIN,HIGH); // test output
+#ifdef LCD_POPULATED
   dispInfoPage();
   delay(1000);
   dispReadyPage();
+#endif
   digitalWrite(LIGHT_OUT_PIN,LOW); // test output end
   Serial.printf("WIFI SSID:%s\n", Settings.wifi_ssid);
   Serial.printf("WIFI PWD:%s\n", Settings.wifi_psw);
@@ -228,7 +158,17 @@ void setup() {
   Serial.printf("On time:%u\n", Settings.on_time);
   Serial.printf("Brightness:%u\n", Settings.brightness);
   Serial.printf("PWM Freq:%u\n", Settings.pwm_freq);
+  Serial.printf("Autostart:%s\n", (Settings.settingFlags.autostart == true ) ? "ON" : "OFF");
 
+  attachInterrupt(digitalPinToInterrupt(OK_BUTTON_PIN), buttonChangedISR, CHANGE);
+
+  if(Settings.settingFlags.autostart){
+    Command = CMD_START;
+  }
+  if (!MDNS.begin("40HzGen")) {  //Start mDNS with name esp8266
+    Serial.println("Error starting MDNS!");
+  }
+  Serial.printf("Size of indexp:%d\n", sizeof(index_page));
   test();
   testButtonHandle();
 }
@@ -238,11 +178,11 @@ void setup() {
  * 
  */
 void loop() {
-#ifndef NEW_BUTTONS
-  handleButtons();
-#else
-  okButton.handle(); // only button handling always checked, other buttons only when not working
-#endif
+  if (bButtonChanged) {
+    //bButtonChanged = false;
+    okButton.handle();// only button handling always checked, other buttons only when not working
+  }
+
   handleCommands();
   if((millis()-mills_2)>499){
     mills_2=millis();
@@ -251,29 +191,21 @@ void loop() {
 
   //flash status led
   digitalWrite(LED_BUILTIN, (bHalfSecond == true) ? LOW : HIGH );   
-
+  
 
   if( Status == deviceStatus_t::STATUS_WORKING ){
     // light switch
     u_long now = micros();
     u_long diff = now - lastLigtSwitch;
-    if( (diff) > hertz2us(Settings.light_freq) ){
-      lastLigtSwitch = now ; 
+    
+    if( diff >= semiPeriod ){
       (bLastLightStatus == false) ? analogWrite(LIGHT_OUT_PIN, (int)(Settings.brightness)) : analogWrite(LIGHT_OUT_PIN, 0);
+      lightFreqErrorUs = diff - semiPeriod;  // calculate error
+      if(lightFreqErrorUs > maxLightFreqErrorUs ) maxLightFreqErrorUs = lightFreqErrorUs;
       bLastLightStatus = !bLastLightStatus;
+      lastLigtSwitch = now ; 
     }
-    // Display update
-    /*
-    if(bHalfSecond){
-      display.clearDisplay();
-      bDisplayUpdated=false;
-    }else{
-      if(!bDisplayUpdated){
-        dispWorkingPage();
-        bDisplayUpdated=true;
-      }
-    } //bHalfSecond
-    */
+
     // check for working timeout
     rem_time = (Settings.on_time * 60 - ((millis() - start_millis) / 1000)); // 14 uS
     if(rem_time<=0){
@@ -282,9 +214,16 @@ void loop() {
     }  
   }
   else{ // not working
+      okButton.handle();
+#ifdef CANCEL_BUTTON_PIN      
       cancelButton.handle();
+#endif      
+#ifdef UP_BUTTON_PIN      
       upButton.handle();
+#endif      
+#ifdef DOWN_BUTTON_PIN      
       downButton.handle();
+#endif      
 
       ArduinoOTA.handle();
   }

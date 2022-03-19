@@ -5,9 +5,6 @@
 #include <ESP8266WiFi.h>
 
 
-
-
-
 bool AP_setup();
 bool wifi_setup();
 #endif

@@ -13,8 +13,6 @@
 #define MIN_PWM_FREQ    1000
 #define MAX_PWM_FREQ    50000
 
-#ifndef NEW_BUTTONS
-#define NEW_BUTTONS
-#endif
+
 
 #endif

@@ -38,8 +38,8 @@ bool AP_setup(){
  * @return false if WIFI connected 
  */
 bool wifi_setup(){
-    if(String( Settings.wifi_ssid ) == String( WIFI_DEFAULT_SSID )){
-        //return true;
+    if(String( Settings.wifi_ssid ) == String( WIFI_SSID_NOT_CONFIGURED )){
+        return true;
     }
     WiFi.begin(Settings.wifi_ssid, Settings.wifi_psw);
     for (int iRetry=0; iRetry<50; iRetry++)

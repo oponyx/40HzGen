@@ -381,83 +381,12 @@ Wire Wire Line
 Connection ~ 2600 5900
 Wire Wire Line
 	2400 5400 2600 5400
-$Comp
-L power:GND #PWR0104
-U 1 1 61FFAD2A
-P 1800 6800
-F 0 "#PWR0104" H 1800 6550 50  0001 C CNN
-F 1 "GND" H 1805 6627 50  0000 C CNN
-F 2 "" H 1800 6800 50  0001 C CNN
-F 3 "" H 1800 6800 50  0001 C CNN
-	1    1800 6800
-	1    0    0    -1  
-$EndComp
-$Comp
-L Device:R R4
-U 1 1 6203662C
-P 1050 6550
-F 0 "R4" H 1120 6596 50  0000 L CNN
-F 1 "10k" H 1120 6505 50  0000 L CNN
-F 2 "Resistor_SMD:R_1206_3216Metric" V 980 6550 50  0001 C CNN
-F 3 "~" H 1050 6550 50  0001 C CNN
-	1    1050 6550
-	1    0    0    -1  
-$EndComp
-$Comp
-L Device:R R5
-U 1 1 6203F468
-P 1300 6550
-F 0 "R5" H 1370 6596 50  0000 L CNN
-F 1 "10k" H 1370 6505 50  0000 L CNN
-F 2 "Resistor_SMD:R_1206_3216Metric" V 1230 6550 50  0001 C CNN
-F 3 "~" H 1300 6550 50  0001 C CNN
-	1    1300 6550
-	1    0    0    -1  
-$EndComp
-$Comp
-L Device:R R6
-U 1 1 62041FA2
-P 1550 6550
-F 0 "R6" H 1620 6596 50  0000 L CNN
-F 1 "10k" H 1620 6505 50  0000 L CNN
-F 2 "Resistor_SMD:R_1206_3216Metric" V 1480 6550 50  0001 C CNN
-F 3 "~" H 1550 6550 50  0001 C CNN
-	1    1550 6550
-	1    0    0    -1  
-$EndComp
-$Comp
-L Device:R R7
-U 1 1 62044C7D
-P 1800 6550
-F 0 "R7" H 1870 6596 50  0000 L CNN
-F 1 "10k" H 1870 6505 50  0000 L CNN
-F 2 "Resistor_SMD:R_1206_3216Metric" V 1730 6550 50  0001 C CNN
-F 3 "~" H 1800 6550 50  0001 C CNN
-	1    1800 6550
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	1050 6700 1050 6750
-Wire Wire Line
-	1050 6750 1300 6750
-Wire Wire Line
-	1800 6750 1800 6700
-Wire Wire Line
-	1550 6700 1550 6750
-Connection ~ 1550 6750
-Wire Wire Line
-	1550 6750 1800 6750
-Wire Wire Line
-	1300 6700 1300 6750
-Connection ~ 1300 6750
-Wire Wire Line
-	1800 6400 1800 6350
 Wire Wire Line
 	1800 6350 2000 6350
 Wire Wire Line
-	2000 5900 1550 5900
+	2000 5900 1800 5900
 Wire Wire Line
-	2000 4950 1050 4950
+	2000 4950 1800 4950
 Text Label 1800 4950 0    50   ~ 0
 IO14
 Text Label 1800 5900 0    50   ~ 0
@@ -530,19 +459,6 @@ F 3 "~" H 9650 3350 50  0001 C CNN
 	1    9650 3350
 	0    1    1    0   
 $EndComp
-$Comp
-L power:+3.3V #PWR0105
-U 1 1 62078DE2
-P 2600 4750
-F 0 "#PWR0105" H 2600 4600 50  0001 C CNN
-F 1 "+3.3V" H 2615 4923 50  0000 C CNN
-F 2 "" H 2600 4750 50  0001 C CNN
-F 3 "" H 2600 4750 50  0001 C CNN
-	1    2600 4750
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	2600 4750 2600 4950
 $Comp
 L power:+3.3V #PWR0106
 U 1 1 620807CC
@@ -689,7 +605,6 @@ Text Label 7000 2300 0    50   ~ 0
 EN
 Text Label 10100 2750 0    50   ~ 0
 EN
-Connection ~ 2600 4950
 Wire Wire Line
 	2600 4950 2600 5400
 Connection ~ 2600 5400
@@ -698,20 +613,9 @@ Wire Wire Line
 Wire Wire Line
 	2600 5900 2600 6350
 Wire Wire Line
-	1550 5900 1550 6400
-Wire Wire Line
-	1050 4950 1050 6400
-Wire Wire Line
-	2000 5400 1300 5400
-Wire Wire Line
-	1300 5400 1300 6400
+	2000 5400 1800 5400
 Text Label 1800 5400 0    50   ~ 0
 IO16
-Wire Wire Line
-	1300 6750 1550 6750
-Wire Wire Line
-	1800 6750 1800 6800
-Connection ~ 1800 6750
 Text Label 10100 2450 0    50   ~ 0
 IO2
 $Comp
@@ -908,4 +812,18 @@ Wire Notes Line
 	10850 900  10850 5750
 Text Notes 8750 4650 0    79   ~ 0
 Optional AC Power Supply
+Wire Wire Line
+	2600 6350 2600 6450
+Connection ~ 2600 6350
+$Comp
+L power:GND #PWR0104
+U 1 1 62373E9D
+P 2600 6450
+F 0 "#PWR0104" H 2600 6200 50  0001 C CNN
+F 1 "GND" H 2605 6277 50  0000 C CNN
+F 2 "" H 2600 6450 50  0001 C CNN
+F 3 "" H 2600 6450 50  0001 C CNN
+	1    2600 6450
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
