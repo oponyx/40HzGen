@@ -4,7 +4,9 @@
 
 
 # 40HzGen
-An advanced [ESP8266](https://en.wikipedia.org/wiki/ESP8266) based device used to drive a 40Hz (programmable) flashing led light for non invasive Alzheimer Gamma Light Therapy.
+An advanced [ESP8266](https://en.wikipedia.org/wiki/ESP8266) based device used to drive a 40Hz (programmable) flashing led light for brain stimulation and non invasive Alzheimer Gamma Light Therapy.
+
+https://www.webmd.com/brain/what-to-know-about-gamma-brain-waves
 
 http://news.mit.edu/2016/visual-stimulation-treatment-alzheimer-1207
 
@@ -13,10 +15,10 @@ https://picower.mit.edu/innovations-inventions/genus
 
 ### Features:
   * Complete configuration and control through web pages
-  * Programmable Light On-Time, Gamma Frequence and Light Brightness 
+  * Programmable Light On-Time, Frequence and Brightness 
   * WIFI Station and AP mode
 
-![alt text](https://github.com/oponyx/40HzGen/blob/master/kicad/40Hz.jpg?raw=true "PCB")
+![alt text](https://github.com/oponyx/40HzGen/blob/master/kicad/40Hz.jpg?raw=true "Prototype PCB")
 
 ### Hardware notes:
  * Board designed to be fitted with 'Wemos D1 mini' or 'ESP12F' modules

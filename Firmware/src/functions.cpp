@@ -1,12 +1,9 @@
 /*
 functions.cpp - generic functions
 
-
-copyright Copyright (c) 2022 Onofrio Pagliarulo (oponyx@hotmail.it)
-
 MIT License
 
-Copyright (c) 2022 Pagliarulo Onofrio
+Copyright (c) 2022 Pagliarulo Onofrio (oponyx@hotmail.it)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -96,7 +93,9 @@ void setupOTA(){
  * 
  */
 void setupIO(){
-  pinMode(LED_BUILTIN, OUTPUT);
+#ifdef STATUS_LED
+  pinMode(STATUS_LED, OUTPUT);
+#endif
   pinMode(LIGHT_OUT_PIN, OUTPUT);
 #ifdef AUDIO_OUT_PIN
   pinMode(AUDIO_OUT_PIN, OUTPUT);
@@ -236,7 +235,7 @@ void start(){
 void stop(){
   Status = deviceStatus_t::STATUS_IDLE;
   rem_time = 0;
-  digitalWrite(LIGHT_OUT_PIN, LOW);
+  digitalWrite(LIGHT_OUT_PIN, !LIGHT_OUT_ACTIVE_LVL);
   Serial.println("Stopped!!");
 #ifdef LCD_POPULATED
   dispReadyPage();

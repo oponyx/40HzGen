@@ -1,12 +1,9 @@
 /*
 globals.cpp - globals variables
 
-
-copyright Copyright (c) 2022 Onofrio Pagliarulo (oponyx@hotmail.it)
-
 MIT License
 
-Copyright (c) 2022 Pagliarulo Onofrio
+Copyright (c) 2022 Pagliarulo Onofrio (oponyx@hotmail.it)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

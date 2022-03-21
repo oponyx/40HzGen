@@ -1,12 +1,9 @@
 /*
 hw_config.h - hardware configuration file
 
-
-copyright Copyright (c) 2022 Onofrio Pagliarulo (oponyx@hotmail.it)
-
 MIT License
 
-Copyright (c) 2022 Pagliarulo Onofrio
+Copyright (c) 2022 Pagliarulo Onofrio (oponyx@hotmail.it)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -59,7 +56,10 @@ RX  3
 #define DOWN_BUTT_ACTIVE_LVL    LOW
 
 #define LIGHT_OUT_PIN           15  // D8
-#define AUDIO_OUT_PIN           4   // D2
+#define LIGHT_OUT_ACTIVE_LVL    HIGH
+#define AUDIO_OUT_PIN           2   // D4
+#define STATUS_LED              LED_BUILTIN
+#define STATUS_LED_ATIVE_LVL    HIGH
 #endif //ARDUINO_ESP8266_WEMOS_D1MINI
 
 // HW config for ESP01
@@ -68,7 +68,12 @@ RX  3
 
 #define OK_BUTT_ACTIVE_LVL      LOW // buttons active when low
 
-#define LIGHT_OUT_PIN           2  
+#define LIGHT_OUT_PIN           2 
+#define LIGHT_OUT_ACTIVE_LVL    LOW
+
+#ifdef  STATUS_LED             
+#undef STATUS_LED
+#endif
 #endif // ARDUINO_ESP8266_ESP01
 
 

@@ -1,12 +1,9 @@
 /*
 main.cpp - 40HzGen main file
 
-
-copyright Copyright (c) 2022 Onofrio Pagliarulo (oponyx@hotmail.it)
-
 MIT License
 
-Copyright (c) 2022 Pagliarulo Onofrio
+Copyright (c) 2022 Pagliarulo Onofrio (oponyx@hotmail.it)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -83,9 +80,12 @@ void setup() {
   // load settings
   Serial.println("");
   Serial.println("Serial ok");
+  
   // restore default settings if okButton pressed at powerup
+  Serial.println("Checking if button pressed for reset to default settings");
+  delay(1000);
   if(digitalRead(OK_BUTTON_PIN) == OK_BUTT_ACTIVE_LVL){
-    Serial.println("Restoring default setup...");
+    Serial.println("Restoring default settings...");
     restoreDefaultSettings();
   }
 
@@ -161,13 +161,15 @@ void setup() {
   Serial.println("OK");
   
   setupIO();
-  digitalWrite(LIGHT_OUT_PIN,HIGH); // test output
+  digitalWrite(LIGHT_OUT_PIN,LIGHT_OUT_ACTIVE_LVL); // test output
 #ifdef LCD_POPULATED
   dispInfoPage();
+#endif
   delay(1000);
+#ifdef LCD_POPULATED
   dispReadyPage();
 #endif
-  digitalWrite(LIGHT_OUT_PIN,LOW); // test output end
+  digitalWrite(LIGHT_OUT_PIN,!LIGHT_OUT_ACTIVE_LVL); // test output end
   Serial.printf("WIFI SSID:%s\n", Settings.wifi_ssid);
   Serial.printf("WIFI PWD:%s\n", Settings.wifi_psw);
   Serial.printf("AP SSID:%s\n", Settings.ap_ssid);
@@ -183,9 +185,11 @@ void setup() {
   if(Settings.settingFlags.autostart){
     Command = CMD_START;
   }
-  if (!MDNS.begin("40HzGen")) {  //Start mDNS with name esp8266
+  if (!MDNS.begin("40HzGen")) {  //Start mDNS with name 40HzGen
     Serial.println("Error starting MDNS!");
   }
+  
+  /// tests
   Serial.printf("Size of indexp:%d\n", sizeof(index_page));
   test();
   testButtonHandle();
@@ -208,8 +212,9 @@ void loop() {
   }
 
   //flash status led
-  digitalWrite(LED_BUILTIN, (bHalfSecond == true) ? LOW : HIGH );   
-  
+  #ifdef STATUS_LED
+  digitalWrite(STATUS_LED, (bHalfSecond == true) ? STATUS_LED_ATIVE_LVL : !STATUS_LED_ATIVE_LVL );   
+  #endif
 
   if( Status == deviceStatus_t::STATUS_WORKING ){
     // light switch
@@ -217,7 +222,7 @@ void loop() {
     u_long diff = now - lastLigtSwitch;
     
     if( diff >= semiPeriod ){
-      (bLastLightStatus == false) ? analogWrite(LIGHT_OUT_PIN, (int)(Settings.brightness)) : analogWrite(LIGHT_OUT_PIN, 0);
+      (bLastLightStatus == false) ? analogWrite(LIGHT_OUT_PIN, (LIGHT_OUT_ACTIVE_LVL)  ? (int)(Settings.brightness) : 100 -(int)(Settings.brightness)) : digitalWrite(LIGHT_OUT_PIN, !LIGHT_OUT_ACTIVE_LVL);
       lightFreqErrorUs = diff - semiPeriod;  // calculate error
       if(lightFreqErrorUs > maxLightFreqErrorUs ) maxLightFreqErrorUs = lightFreqErrorUs;
       bLastLightStatus = !bLastLightStatus;
