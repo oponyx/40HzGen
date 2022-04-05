@@ -53,7 +53,9 @@ SOFTWARE.
 
 #define AP_DEFAULT_SSID "40Hz_Gen"
 #define AP_DEFAULT_PASSW "12345678"
+#ifndef DEFAULT_LIGHT_FREQ
 #define DEFAULT_LIGHT_FREQ 40
+#endif
 #ifndef DEFAULT_ON_TIME
 #define DEFAULT_ON_TIME 60
 #endif

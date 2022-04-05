@@ -1,0 +1,38 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta charset=utf-8>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      body {
+        text-align: center;
+        font-family: verdana,sans-serif;
+        background: #202020;
+      }
+      html {
+        display: inline-block;
+        margin: 0px auto;
+        text-align: center;
+        color: azure;
+      }
+      h2 { font-size: 2.5rem; margin-block-start: 0.5em; margin-block-end: 0.5em;}
+      p { font-size: 2.0rem; }
+      div.main{
+        max-width: 500px;
+      }
+    </style>
+  </head>
+  <body><center>
+    <div class="main">
+      <div style="width:80%;">
+        <h2>Rebooting, please wait.</h2> 
+        <p>You'll be redirected in 10 seconds...</p>
+      </div>   
+    </div></center>
+    <script>
+      setTimeout(function() {
+        window.location.href = "/index.html";
+      }, 8000);
+    </script>
+  </body>
+</html>

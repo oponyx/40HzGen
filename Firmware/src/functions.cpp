@@ -24,13 +24,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 #include <Arduino.h>
-#include <ArduinoOTA.h>
+//#include <ArduinoOTA.h>
 #include "hw_config.h"
 #include "globals.h"
 #include "settings.h"
 #include "config.h"
 #include "functions.h"
 #include "web_serv.h"
+#include "log.h"
+
+
 #ifdef LCD_POPULATED
 #include "graphic.h"
 #endif
@@ -49,42 +52,34 @@ uint16_t Command;             // the variable used to dispatch commands
 
 extern deviceStatus_t Status;
 
+
 int indexvReal = 0;
 
+void check_flash(){
+  // taken from ESP8266 CheckFlashConfig by Markus Sattler
 
-/**
- * @brief OTA setup function
- * 
- */
-void setupOTA(){
-  // per aggiornamenti OTA
-  ArduinoOTA.onStart([]() {  
-    String type;  
-    if (ArduinoOTA.getCommand() == U_FLASH) {  
-      type = "sketch";  
-    } else { // U_SPIFFS  
-      type = "filesystem";  
-    }  
-    
-    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()  
-    Serial.println("ArduinoOTA: Start updating " + type);  
-  });  
-  ArduinoOTA.onEnd([]() {
-    Serial.println("\nArduinoOTA: Update End");
-  });
-  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    Serial.printf("ArduinoOTA: Progress: %u%%\r", (progress / (total / 100)));
-  });
-  ArduinoOTA.onError([](ota_error_t error) {
-    Serial.printf("ArduinoOTA: Error[%u]: ", error);
-    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-    else if (error == OTA_END_ERROR) Serial.println("End Failed");
-  });
-  ArduinoOTA.begin();
+  uint32_t realSize = ESP.getFlashChipRealSize();
+  uint32_t ideSize = ESP.getFlashChipSize();
+  FlashMode_t ideMode = ESP.getFlashChipMode();
+
+  m_log(true, "Flash real id:   %08X\n", ESP.getFlashChipId());
+  m_log(true, "Flash real size: %u bytes\n\n", realSize);
+
+  m_log(true, "Flash ide  size: %u bytes\n", ideSize);
+  m_log(true, "Flash ide speed: %u Hz\n", ESP.getFlashChipSpeed());
+  m_log(true, "Flash ide mode:  %s\n", (ideMode == FM_QIO ? "QIO" : ideMode == FM_QOUT ? "QOUT"
+                                                                    : ideMode == FM_DIO  ? "DIO"
+                                                                    : ideMode == FM_DOUT ? "DOUT"
+                                                                                         : "UNKNOWN"));
+
+  if (ideSize != realSize) {
+    m_log(true, "Flash Chip configuration wrong!\n");
+  } else {
+    m_log(true, "Flash Chip configuration ok.\n");
+  }
+
 }
+
 
 /**
  * @brief Setup Input and Output pins
@@ -148,7 +143,9 @@ extern bool bButtonChanged;
  * 
  */
 void buttonShortPressed(uint8_t btnPin){
-  Serial.printf("buttonShortPressed Callback function called. Argument is:%s\n" , String(btnPin).c_str());
+#ifdef __DEBUG_BUTTONS__  
+  m_log(true, "buttonShortPressed Callback function called. Argument is:%s\n" , String(btnPin).c_str());
+#endif
   switch(btnPin){
     case OK_BUTTON_PIN:    
       if( Status == deviceStatus_t::STATUS_WORKING ){
@@ -175,16 +172,18 @@ void buttonShortPressed(uint8_t btnPin){
 }
 
 void buttonLongPressed(uint8_t btnPin){
-  Serial.printf("buttonLongPressed Callback function called. Argument is:%s\n" , String(btnPin).c_str());
+#ifdef __DEBUG_BUTTONS__  
+  m_log(true, "buttonLongPressed Callback function called. Argument is:%s\n" , String(btnPin).c_str());
+#endif  
   bButtonChanged = false;
 }
 
 void buttonPressed(uint8_t btnPin){
-  //Serial.printf("buttonPressed Callback function called. Argument is:%s\n" , String(btnPin).c_str());
+  //m_log(true, "buttonPressed Callback function called. Argument is:%s\n" , String(btnPin).c_str());
 }
 
 void buttonReleased(uint8_t btnPin){
-  //Serial.printf("buttonReleased Callback function called. Argument is:%s\n" , String(btnPin).c_str());
+  //m_log(true, "buttonReleased Callback function called. Argument is:%s\n" , String(btnPin).c_str());
 }  
 
 void test(){
@@ -192,7 +191,7 @@ void test(){
   //hertz2us(80);
   rem_time = (Settings.on_time * 60 - ((millis() - start_millis) / 1000));
   u_long n2 = micros();
-  Serial.printf("usec hertz2us(80):%lu\n", n2-n1);
+  m_log(true, "usec hertz2us(80):%lu\n", n2-n1);
 }
 
 void testButtonHandle(){
@@ -200,7 +199,7 @@ void testButtonHandle(){
   //hertz2us(80);
   okButton.handle();
   u_long n2 = micros();
-  Serial.printf("usec testButtonHandle():%lu\n", n2-n1);
+  m_log(true, "usec testButtonHandle():%lu\n", n2-n1);
 }
 
 
@@ -221,11 +220,11 @@ void start(){
   semiPeriod = hertz2us(Settings.light_freq);
   start_millis = millis();
   Status = deviceStatus_t::STATUS_WORKING;
-  Serial.printf("Freq:%u, Bri:%u, PWM freq:%u uS:%lu\n", Settings.light_freq, Settings.brightness, Settings.pwm_freq, semiPeriod);
+  m_log(true, "Freq:%u, Bri:%u, PWM freq:%u uS:%lu\n", Settings.light_freq, Settings.brightness, Settings.pwm_freq, semiPeriod);
 #ifdef LCD_POPULATED
   dispWorkingPage();
 #endif
-  Serial.println("Started!!");
+  m_log(true, "Started!!\n");
 }
 
 /**
@@ -236,7 +235,7 @@ void stop(){
   Status = deviceStatus_t::STATUS_IDLE;
   rem_time = 0;
   digitalWrite(LIGHT_OUT_PIN, !LIGHT_OUT_ACTIVE_LVL);
-  Serial.println("Stopped!!");
+  m_log(true, "Stopped!!\n");
 #ifdef LCD_POPULATED
   dispReadyPage();
 #endif
@@ -276,33 +275,35 @@ void handleCommands(){
     case CMD_GET_SETTINGS_REQ_PARAMS:
       Command = CMD_NO_COMMANDS;
       if(getSettingsRequestParam(webRequest)){
-        Serial.println("Settings changed. Rebooting...");
-        webRequest -> send_P(200, "text/html", rebooting_page);
+        m_log(true, "Settings changed. Rebooting...\n");
+        sendRebootingPage(webRequest);
+        //webRequest -> send_P(200, "text/html", rebooting_html);
         Command = CMD_SAVE_SETTING_AND_REBOOT;
       }else{
-          Serial.println("Settings not changed. Redirecting to index page...");
-          webRequest->send_P(200, "text/html", index_page); 
+          m_log(true, "Settings not changed. Redirecting to index page...\n");
+          //webRequest->send_P(200, "text/html", index_html);
+          sendIndexPage(webRequest);
       }
       break;
     case CMD_SAVE_SETTING_AND_REBOOT:
-      Serial.println("CMD Save Settings and Reboot detected");
+      m_log(true, "CMD Save Settings and Reboot detected\n");
       Command = CMD_NO_COMMANDS;
       delay(1000);
       SettingsWrite();
       ESP.restart();
       break;
     case CMD_REBOOT:
-      Serial.println("CMD Reboot detected");
+      m_log(true, "CMD Reboot detected\n");
       delay(1000);
       ESP.restart();
       break;
     case CMD_START:
-      Serial.println("CMD start detected");
+      m_log(true, "CMD start detected\n");
       Command = CMD_NO_COMMANDS;
       start();
       break;
     case CMD_STOP:
-      Serial.println("CMD stop detected");
+      m_log(true, "CMD stop detected\n");
       Command = CMD_NO_COMMANDS;
       stop();
       break;

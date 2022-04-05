@@ -23,12 +23,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+
+
+/*
+python c:/Users/op/.platformio/packages/espota/espota.py -i 192.168.1.174  -f .pio/build/esp01_1m/firmware.bin  
+
+*/
 #include <Arduino.h>
 #include <stdint.h>
 
-#include <ArduinoOTA.h>
-#include <ESP8266mDNS.h>
+//#include <ArduinoOTA.h>
 
+#include "hw_config.h"
 #include "config_override.h"
 #include "globals.h"
 #include "config.h"
@@ -36,13 +42,10 @@ SOFTWARE.
 #include "settings.h"
 #include "wifi.h"
 #include "web_serv.h"
-#include "hw_config.h"
 #include "functions.h"
 #include "error_codes.h"
 #include "button.hpp"
-#ifdef LCD_POPULATED
 #include "graphic.h"
-#endif
 
 
 
@@ -64,7 +67,7 @@ Button downButton(DOWN_BUTTON_PIN, INPUT_PULLUP, DOWN_BUTT_ACTIVE_LVL);
 #endif
 
 
-void ICACHE_RAM_ATTR buttonChangedISR(){
+void IRAM_ATTR buttonChangedISR(){
  bButtonChanged = true;
 }
 
@@ -78,24 +81,24 @@ void setup() {
 
   Serial.begin(115200);
   // load settings
-  Serial.println("");
-  Serial.println("Serial ok");
+  m_log(false, "\n");
+  m_log(true, "Serial ok\n");
   
   // restore default settings if okButton pressed at powerup
-  Serial.println("Checking if button pressed for reset to default settings");
+  m_log(true, "Checking if button pressed for reset to default settings\n");
   delay(1000);
   if(digitalRead(OK_BUTTON_PIN) == OK_BUTT_ACTIVE_LVL){
-    Serial.println("Restoring default settings...");
+    m_log(false, "Restoring default settings...");
     restoreDefaultSettings();
   }
 
-  Serial.printf("Loading Settings..");
+  m_log(true, "Loading Settings..");
   uint8_t result = SettingsRead();
   if( result != 0 ){
     switch ( result )
     {
     case ERROR_SETTINGS_CRC:
-        Serial.println("\nError: Bad CRC on settings datas\nResoring default settings.");
+        m_log(false, "\nError: Bad CRC on settings datas\nResoring default settings.\n");
         restoreDefaultSettings();
       break;
     
@@ -103,15 +106,15 @@ void setup() {
       break;
     }
   }else{
-    Serial.println("Ok");
+    m_log(false, "Ok\n");
   }
 
 #ifdef LCD_POPULATED
-  Serial.printf("Setting up Display...");
+  m_log(true, "Setting up Display...");
   if(display_init()){
-    Serial.println("FAIL!");
+    m_log(false, "FAIL!\n");
   }
-  Serial.println("Ok.");
+  m_log(false, "Ok.\n");
 
   dispLogoPage();
   delay(1000);
@@ -124,42 +127,35 @@ void setup() {
   
   display.printf("Setting up WIFI...");
 #endif
-  Serial.printf("Setting up WIFI...");
-  if(wifi_setup()){
-    Serial.println("WIFI connection KO!");   
+  m_log(true, "Setting up WIFI...");
+  if(!wifi_setup()){
+    m_log(false, "WIFI connection KO!\n");   
   }
   else{
-    Serial.println("OK!");
-    Serial.println("WIFI connection Successful");
-    Serial.print("WIFI IP Address is: ");
-    Serial.println(WiFi.localIP());// Print the IP address
+    m_log(false, "OK!\n");
+    m_log(true, "WIFI connection Successful\n");
+    m_log(true, "WIFI IP Address is:%s\n", WiFi.localIP().toString().c_str() );
   }
-  Serial.println(F("Setting up AP..."));
-  if(AP_setup()){  
-    Serial.println(F("AP ko!!"));
+  m_log(true, "Setting up AP...");
+  if(!AP_setup()){  
+    m_log(false, "KO!!");
   }
   else{
-    Serial.print("AP IP address = ");
-    Serial.println(WiFi.softAPIP());
+    m_log(false, "OK!\n");
+    m_log(true, "AP IP address = %s\n" ,  WiFi.softAPIP().toString().c_str());
 #ifdef LCD_POPULATED
     display.println(WiFi.softAPIP());
 #endif
   }
 
 
-  Serial.printf("Starting web server...");
+  m_log(true, "Starting web server...");
   if (web_serv_setup() == NO_ERRORS) {
-    Serial.println("OK!");
+    m_log(false, "OK!\n");
   }else{
-    Serial.println("ERROR!");
+    m_log(false, "<<<<<<<<<<<<< ERROR!");
   }
 
-
-  // per aggiornamenti OTA
-  Serial.printf("Starting OTA service...");
-  setupOTA();
-  Serial.println("OK");
-  
   setupIO();
   digitalWrite(LIGHT_OUT_PIN,LIGHT_OUT_ACTIVE_LVL); // test output
 #ifdef LCD_POPULATED
@@ -170,29 +166,27 @@ void setup() {
   dispReadyPage();
 #endif
   digitalWrite(LIGHT_OUT_PIN,!LIGHT_OUT_ACTIVE_LVL); // test output end
-  Serial.printf("WIFI SSID:%s\n", Settings.wifi_ssid);
-  Serial.printf("WIFI PWD:%s\n", Settings.wifi_psw);
-  Serial.printf("AP SSID:%s\n", Settings.ap_ssid);
-  Serial.printf("AP PWD:%s\n", Settings.ap_psw);
-  Serial.printf("Light Freq:%u\n", Settings.light_freq);
-  Serial.printf("On time:%u\n", Settings.on_time);
-  Serial.printf("Brightness:%u\n", Settings.brightness);
-  Serial.printf("PWM Freq:%u\n", Settings.pwm_freq);
-  Serial.printf("Autostart:%s\n", (Settings.settingFlags.autostart == true ) ? "ON" : "OFF");
+  m_log(true, "WIFI SSID:%s\n", Settings.wifi_ssid);
+  m_log(true, "WIFI PWD:%s\n", Settings.wifi_psw);
+  m_log(true, "AP SSID:%s\n", Settings.ap_ssid);
+  m_log(true, "AP PWD:%s\n", Settings.ap_psw);
+  m_log(true, "Light Freq:%u\n", Settings.light_freq);
+  m_log(true, "On time:%u\n", Settings.on_time);
+  m_log(true, "Brightness:%u\n", Settings.brightness);
+  m_log(true, "PWM Freq:%u\n", Settings.pwm_freq);
+  m_log(true, "Autostart:%s\n", (Settings.settingFlags.autostart == true ) ? "ON" : "OFF");
 
   attachInterrupt(digitalPinToInterrupt(OK_BUTTON_PIN), buttonChangedISR, CHANGE);
 
   if(Settings.settingFlags.autostart){
     Command = CMD_START;
   }
-  if (!MDNS.begin("40HzGen")) {  //Start mDNS with name 40HzGen
-    Serial.println("Error starting MDNS!");
-  }
   
   /// tests
-  Serial.printf("Size of indexp:%d\n", sizeof(index_page));
-  test();
-  testButtonHandle();
+  //check_flash();
+  //m_log(true, "Size of indexp:%d\n", sizeof(index_page));
+  //test();
+  //testButtonHandle();
 }
 
 /**
@@ -232,7 +226,7 @@ void loop() {
     // check for working timeout
     rem_time = (Settings.on_time * 60 - ((millis() - start_millis) / 1000)); // 14 uS
     if(rem_time<=0){
-      Serial.println("Timed Out");
+      m_log(true, "Timed Out\n");
       stop();
     }  
   }
@@ -248,7 +242,7 @@ void loop() {
       downButton.handle();
 #endif      
 
-      ArduinoOTA.handle();
+      //ArduinoOTA.handle();
   }
   //display.display();
   

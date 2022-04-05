@@ -1,0 +1,323 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta charset=utf-8>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>40HzGen Index Page</title>
+    <style>
+      body {
+        text-align: center;
+        font-family: verdana,sans-serif;
+        background: #202020;
+      }
+      html {
+        display: inline-block;
+        margin: 0px auto;
+        text-align: center;
+        color: azure;
+      }
+      h2 { font-size: 2.5rem; margin-block-start: 0.5em; margin-block-end: 0.5em;}
+      p { font-size: 2.0rem; }
+      button {
+        border: 0;
+        border-radius: 0.3rem;
+        background: #1fa3ec;
+        width: 100%;
+        color: #faffff;
+        line-height: 2.4rem;
+        font-size: 1.2rem;
+        transition-duration: 0.4s;
+        cursor: pointer;
+      }
+      .button-green {
+        border: 0;
+        border-radius: 0.3rem;
+        background: #05ec24;
+        width: 100%;
+        color: #faffff;
+        line-height: 2.4rem;
+        font-size: 1.2rem;
+        transition-duration: 0.4s;
+        cursor: pointer;
+      }
+      .button-red {
+        border: 0;
+        border-radius: 0.3rem;
+        background: #ee0909;
+        width: 100%;
+        color: #faffff;
+        line-height: 2.4rem;
+        font-size: 1.2rem;
+        transition-duration: 0.4s;
+        cursor: pointer;
+      }
+      .units { font-size: 0.7rem; }
+      .param-labels{
+        font-size: 1.0rem;
+        vertical-align:middle;
+      }
+      button[disabled]:active, button[disabled],
+      input[type="button"][disabled]:active,
+      input[type="button"][disabled],
+      input[type="submit"][disabled]:active,
+      input[type="submit"][disabled] ,
+      button[disabled]:hover,
+      input[type="button"][disabled]:hover,
+      input[type="submit"][disabled]:hover
+      {
+        border: 2px outset ButtonFace;
+        color: GrayText;
+        cursor: inherit;
+        background-color: #ddd;
+        background: #ddd;
+      }
+      div.main{
+        max-width: 500px;
+      }
+    </style>
+  </head>
+  <body>
+    <center><div class="main">
+      <div style="width:80%;">
+        <h2>40Hz Generator</h2>
+        <div>
+          <table style="width: 100%"><tbody>
+            <tr>
+            <td style="width: 10%"></td>     
+            <td  style="width: 40%">     
+                <button disabled="true" id="BUTT_START" onclick="start()" class="button-green" style="width: 100%">Start</Button>
+            </td>
+            <td style="width: 40%">     
+                <button disabled="true" id="BUTT_STOP" onclick="stop()" class="button-red" style="width: 100%">Stop</Button>
+            </td>
+            <td style="width: 10%"></td>     
+            </tr>
+          </tbody></table>
+        </div>  
+        <div>
+            <p>Status:&nbsp;&nbsp;
+            <span id="MESSAGE">Wait...</span></p>
+        </div>  
+
+        <table style="width: 100%;"><tbody>
+          <tr>
+              <td colspan="3" style="text-align:center";>     
+                  <span class="param-labels">Brightness:</span><span class="param-labels" id="BRIGHTNESS">val</span><span class="units">&nbsp%</span>
+              </td>
+          </tr>
+          <tr>
+              <td colspan="3" style="text-align:center";>
+                  <input style="width: 100%;" type="range" id="BRIGHTNESS_SLIDER" name="BRIGHTNESS_SLIDER" min="1" max="100" >
+              </td>
+          </tr>
+          <tr>
+              <td colspan="3" style="text-align:center";>
+                  <button id="BUTT_SUBMIT_BRI" disabled="true" onclick="set_bri()">Submit Bri</button>
+              </td>
+          </tr>
+          <tr>
+              <td colspan="3" style="text-align:center";>     
+                  <span class="param-labels">Frequence:</span><span class="param-labels" id="FREQUENCE">val</span><span class="units">&nbspHz</span>
+              </td>
+          </tr>
+          <tr>
+              <td colspan="3" style="text-align:center";>
+                  <input style="width: 100%;" type="range" id="FREQUENCE_SLIDER" name="FREQUENCE_SLIDER" min="1" max="100" >
+              </td>
+          </tr>
+          <tr>
+              <td colspan="3" style="text-align:center";>
+                  <button id="BUTT_SUBMIT_FREQ" disabled="true" onclick="set_freq()">Submit Freq</button>
+              </td>
+          </tr>
+          <tr>
+            <td>     
+                <span class="param-labels">Light Status:</span> 
+                <span id="LIGHT_STATUS">?</span>
+            </td>
+            <td>
+                <span class="param-labels">Audio Status:</span> 
+            <span id="AUDIO_STATUS">?</span>
+            </td>
+            <td>
+            <span class="param-labels">Error:</span> 
+            <span id="LIGHT_ERROR">?</span><span class="units">&nbspuS</span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+            <span class="param-labels">Rem. Time:</span> 
+            <span id="REM_TIME">?</span><span class="units">&nbspSec</span>
+            </td>
+            <td>
+            <span class="param-labels">UP TIME:</span> 
+            <span id="UP_TIME">?</span>
+            </td>
+            <td>
+            <span class="param-labels">Free Heap:</span> 
+            <span id="FREE_HEAP">?</span>
+            </td>
+          </tr>  
+          <tr>
+            <td  colspan="3">     
+            <form id=but1 action='/settings' method='get'><button>Settings</button></form>
+            </td>
+          </tr>
+        </tbody></table>
+        <div>
+          <table style="width:100%; display:none" >
+            <tr>
+            <td width="25%">OK</td>
+            <td width="25%">UP</td>
+            <td width="25%">DOWN</td>
+            <td width="25%">CANCEL</td>
+            </tr>
+            <tr>
+            <td id="OK_BUTTON">?</td>
+            <td id="UP_BUTTON">?</td>
+            <td id="DOWN_BUTTON">?</td>
+            <td id="CANCEL_BUTTON">?</td>
+            </tr>
+          </table>
+        </div>
+        <br>
+        <div class="units">
+          <span>Wifi ip:<span id="WIFI_IP"></span>
+          <br>
+          <span>Wifi RSSI:<span id="RSSI"></span>
+        </div>
+      </div>
+    </div></center>
+  </body>
+  <script>
+    function start(){
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          // get json data
+          console.log("Received data:" + this.responseText);
+          var json_msg = JSON.parse(this.responseText);
+          if(json_msg.result=="OK"){
+            document.getElementById("BUTT_START").disabled=true;
+            document.getElementById("BUTT_STOP").disabled=false;
+          }
+        }
+      };
+      xhttp.open("GET", "/start", true);
+      xhttp.send();
+    }
+
+    function stop(){
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          // get json data
+          console.log("Received data:" + this.responseText);
+          var json_msg = JSON.parse(this.responseText);
+          if(json_msg.result=="OK"){
+            document.getElementById("BUTT_START").disabled=false;
+            document.getElementById("BUTT_STOP").disabled=true;
+          }
+        }
+      };
+      xhttp.open("GET", "/stop", true);
+      xhttp.send();
+    }
+
+    var brightness_slider = document.getElementById("BRIGHTNESS_SLIDER");  
+    var frequence_slider = document.getElementById("FREQUENCE_SLIDER");  
+
+    brightness_slider.oninput = function() {
+      //document.getElementById("BRIGHTNESS").innerHTML = this.value;
+      document.getElementById("BUTT_SUBMIT_BRI").disabled=false;
+    } 
+
+    frequence_slider.oninput = function() {
+      //document.getElementById("LIGHT_FREQ").innerHTML = this.value;
+      document.getElementById("BUTT_SUBMIT_FREQ").disabled=false;
+    } 
+
+    function set_bri(){
+      var xhttp = new XMLHttpRequest();
+      var bri_slider_value = brightness_slider.value;
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          // get json data
+          console.log("Received data:" + this.responseText);
+          var json_msg = JSON.parse(this.responseText);
+          bri_slider_value = json_msg.brightness;
+          document.getElementById("BRIGHTNESS").innerHTML = json_msg.brightness;
+          document.getElementById("BUTT_SUBMIT_BRI").disabled=true;
+        }
+      };
+      var Data2Send = new FormData(); 
+      Data2Send.append("brightness",  bri_slider_value);
+      console.log("Sending data:" + JSON.stringify(Object.fromEntries(Data2Send)));
+      xhttp.open("POST", "/set_bri", true);
+      xhttp.send(Data2Send);
+    }
+
+    function set_freq(){
+      var xhttp = new XMLHttpRequest();
+      var freq_slider_value = frequence_slider.value;
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          // get json data
+          console.log("Received data:" + this.responseText);
+          var json_msg = JSON.parse(this.responseText);
+          freq_slider_value = json_msg.brightness;
+          document.getElementById("FREQUENCE").innerHTML = json_msg.light_freq;
+          document.getElementById("BUTT_SUBMIT_FREQ").disabled=true;
+        }
+      };
+      var Data2Send = new FormData(); 
+      Data2Send.append("light_freq",  freq_slider_value);
+      console.log("Sending data:" + JSON.stringify(Object.fromEntries(Data2Send)));
+      xhttp.open("POST", "/set_freq", true);
+      xhttp.send(Data2Send);
+    }
+
+    setInterval( getStatus, 3000 ) ;
+    
+    window.onload = function(){
+      getStatus();
+    }
+
+    function getStatus() {
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          // get json data
+          console.log("Received data:" + this.responseText);
+          var json_msg = JSON.parse(this.responseText);
+          document.getElementById("BRIGHTNESS").innerHTML = json_msg.brightness;
+          document.getElementById("LIGHT_STATUS").innerHTML = json_msg.light_status;
+          document.getElementById("REM_TIME").innerHTML = json_msg.rem_time;
+          document.getElementById("AUDIO_STATUS").innerHTML = json_msg.audio_status;
+          document.getElementById("LIGHT_ERROR").innerHTML  = json_msg.lightFreqErrorUs;
+          document.getElementById("FREE_HEAP").innerHTML = json_msg.free_heap;
+          document.getElementById("UP_TIME").innerHTML = json_msg.up_time;
+          document.getElementById("FREQUENCE").innerHTML = json_msg.light_freq;
+          document.getElementById("RSSI").innerHTML = json_msg.RSSI;
+          if(json_msg.working == true){
+            document.getElementById("MESSAGE").innerHTML = "ON";
+            document.getElementById("BUTT_START").disabled=true;
+            document.getElementById("BUTT_STOP").disabled=false;
+          }else{
+            document.getElementById("MESSAGE").innerHTML = "Ready";
+            document.getElementById("BUTT_START").disabled=false;
+            document.getElementById("BUTT_STOP").disabled=true;
+          }
+          document.getElementById("OK_BUTTON").innerHTML = json_msg.okButtonStatus;
+          document.getElementById("UP_BUTTON").innerHTML = json_msg.upButtonStatus;
+          document.getElementById("DOWN_BUTTON").innerHTML = json_msg.downButtonStatus;
+          document.getElementById("CANCEL_BUTTON").innerHTML = json_msg.cancelButtonStatus;
+          document.getElementById("WIFI_IP").innerHTML = json_msg.wifi_ip;
+        }
+      };
+      xhttp.open("GET", "/device_status", true);
+      xhttp.send();
+    }
+  </script>
+</body>
+</html>

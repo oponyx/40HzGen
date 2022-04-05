@@ -41,10 +41,12 @@ TX  1
 RX  3
 
 */
+#if !defined(ARDUINO_ESP8266_WEMOS_D1MINI) && !defined(ARDUINO_ESP8266_ESP01)
+#error "The board is not defined!"
+#endif
 
 // HW config for D1Mini And ESP12F
 #ifdef ARDUINO_ESP8266_WEMOS_D1MINI
-#define LCD_POPULATED
 #define CANCEL_BUTTON_PIN       13  // D7 
 #define OK_BUTTON_PIN           14  // D5
 #define UP_BUTTON_PIN           16  // D0
@@ -60,6 +62,7 @@ RX  3
 #define AUDIO_OUT_PIN           2   // D4
 #define STATUS_LED              LED_BUILTIN
 #define STATUS_LED_ATIVE_LVL    HIGH
+
 #endif //ARDUINO_ESP8266_WEMOS_D1MINI
 
 // HW config for ESP01

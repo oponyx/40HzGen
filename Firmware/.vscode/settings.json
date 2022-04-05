@@ -3,6 +3,8 @@
         "eeprom.h": "c",
         "string": "cpp",
         "functional": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "cstdio": "cpp",
+        "array": "cpp"
     }
 }

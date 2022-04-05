@@ -28,6 +28,9 @@ SOFTWARE.
 
 #include <ESPAsyncWebServer.h>
 
+#define __DEBUG_40HZ_WEB__
+#define __DEBUG_BUTTONS__
+
 // commands defines
 #define CMD_NO_COMMANDS               0x0000
 #define CMD_REBOOT                    0x0001

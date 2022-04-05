@@ -5,3 +5,9 @@
 .vscode/ipch
 .history
 src/config_override.h
+src/index.html.h
+src/rebooting.html.h
+src/update.html.h
+src/settings.html.h
+src/redirect.html.h
+output.map

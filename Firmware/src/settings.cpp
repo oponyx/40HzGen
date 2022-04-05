@@ -45,10 +45,10 @@ uint8_t SettingsRead(){
   EEPROM.end();
 
   if(Settings.crc != SettingsCRC()){
-      // Serial.println("CRC Settings doesn't match!!");
+      // m_log(true, "CRC Settings doesn't match!!\n");
       return ERROR_SETTINGS_CRC;
   }
-  //Serial.println("Configuration loaded");
+  //m_log(true, "Configuration loaded\n");
   return NO_ERRORS;
 }
 
@@ -66,7 +66,7 @@ uint8_t SettingsWrite(){
   EEPROM.commit();
   EEPROM.end();
 
-  //Serial.println("Configuration saved");
+  //m_log(true, "Configuration saved\n");
   return NO_ERRORS;
 }
 

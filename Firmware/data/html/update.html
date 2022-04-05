@@ -1,0 +1,162 @@
+<!DOCTYPE HTML><html>
+<head>
+    <meta charset=utf-8>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>40HzGen Firmware Update Page</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: verdana,sans-serif;
+      background: #202020;
+    }
+    html {
+      display: inline-block;
+      margin: 0px auto;
+      text-align: center;
+      color: azure;
+    }
+    h2 { font-size: 2.5rem; margin-block-start: 0.5em; margin-block-end: 0.5em;}
+    p { font-size: 1.2rem; }
+    .button, button ,input[type=submit]{
+      border: 0;
+      border-radius: 0.3rem;
+      background: #1fa3ec;
+      width: 100%;
+      color: #faffff;
+      line-height: 2.4rem;
+      font-size: 1.2rem;
+      transition-duration: 0.4s;
+      cursor: pointer;
+    }
+    input[type=file] {
+        font-size: 1.2rem;
+    }
+    .progress_bar{
+        height:0.5rem;
+        width:0%;
+        padding: 5px 0;
+        border: 1px solid #008aff;
+        background: #002180;
+        text-align: center;
+        color: white;
+        border-radius: .5rem;
+    }
+    div.main{
+      max-width: 500px;
+    }
+  </style>
+</head>
+<body>
+  <center><div class="main">  
+    <div style="width:80%;">
+      <h2>40Hz Generator</h2>
+      <form method="POST" action="" enctype="multipart/form-data" id="upload_form">
+        <input type="file" name="update" accept='.bin' id="file" onchange="fileSelected();">
+        <br>
+        <p>File size:<span id="FILESIZE">File not selected</span></p> 
+        <br>
+        <input type="button" class="button" value="Update" onclick="uploadFirmware();" /> 
+      </form>
+      <br>
+      <div align="left" id="prg_wrap" style="border: 1px solid; width: 100%; border-radius: .5rem;">
+        <div id="PROGRESS_BAR" class="progress_bar"></div>
+      </div>
+      <div>
+          <span id="STATUS"></span><span id="PROGRESS_BAR_VAL">0%</span>
+      </div>
+      <br>
+      <form id=but1 style="width: 100%;" action='/settings' method='get'><button>Back to Settings Page</button></form>
+    </div>
+  </div></center>
+  <script>
+    var fSize;
+    var myTimer;
+
+    function fileSelected(){
+      var myFile = document.getElementById('file').files[0];
+      if(!myFile){
+        return;
+      }
+      fSize = myFile.size;
+      document.getElementById('FILESIZE').innerHTML = bytesToSize(fSize);
+    }
+
+    function bytesToSize(bytes) {
+        var sizes = ['Bytes', 'KB', 'MB'];
+        if (bytes == 0) return 'n/a';
+        var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+        return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
+    };
+
+    function uploadFirmware(){
+      console.log("Submit called");
+      var myform = document.getElementById('upload_form');
+      var myFiles = document.getElementById('file');
+      var file = myFiles.files[0];
+      if(!file) {
+        console.log("file not selected") ;
+        return false;
+      }
+      var formData = new FormData();
+      document.getElementById('STATUS').innerHTML = "Uploading file:"
+      formData.append("files", file, file.name);
+      var xhr = new XMLHttpRequest();
+      xhr.upload.addEventListener("progress", firmwareUploadProgress, false);
+      xhr.addEventListener("load", firmwareUploadComplete, false);
+      xhr.addEventListener("error", firmwareUploadFailed, false);
+      xhr.addEventListener("abort", firmwareUploadCanceled, false);
+      xhr.open("POST", "/update");
+      xhr.send(formData);
+      myTimer = setInterval(doUpdates, 300);
+    }
+
+    function firmwareUploadProgress(evt){
+      if(evt.lengthComputable) {
+        console.log('.upload.addEventListener received evt.loaded:' + evt.loaded);
+        var percent = Math.round((evt.loaded / evt.total) * 100);
+        document.getElementById('PROGRESS_BAR').style.width = percent + "%";
+        document.getElementById('PROGRESS_BAR_VAL').innerHTML = percent + "%";
+      }
+      else{
+        progress_bar_val.innerHTML = "Unable to calculate progress";
+      }
+    }
+
+    function firmwareUploadComplete(evt) {
+      clearInterval(myTimer);
+      document.getElementById('PROGRESS_BAR').style.width = "100%";
+      document.getElementById('PROGRESS_BAR_VAL').innerHTML = "100%";
+      setTimeout(myTimeout, 1000);
+      function myTimeout(){
+        alert(evt.target.responseText);
+      }
+    }
+    function firmwareUploadFailed(evt) {
+      clearInterval(myTimer);
+      alert("Error uploading file.");
+    }
+    function firmwareUploadCanceled(evt) {
+      clearInterval(myTimer);
+      alert("Upload canceled.");
+    }
+
+    function doUpdates() {     
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          // get json data
+          //console.log("Received data:" + this.responseText);
+          var json_msg = JSON.parse(this.responseText);
+          console.log("progress:" + json_msg.progress );
+          var percent = Math.round((json_msg.progress / fSize) * 100);
+          document.getElementById('PROGRESS_BAR').style.width = percent + "%";
+          document.getElementById('PROGRESS_BAR_VAL').innerHTML = percent + "%";
+          document.getElementById('STATUS').innerHTML = "Flashing..."
+        }
+      };
+      xhttp.open("GET", "/update_progress", true);
+      xhttp.send();
+    }  
+  </script>
+</body>
+</html>

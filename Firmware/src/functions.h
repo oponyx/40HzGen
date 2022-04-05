@@ -26,7 +26,6 @@ SOFTWARE.
 #ifndef _FUNCTIONS_H_
 #define _FUNCTIONS_H_
 
-#include "web_serv.h"
 #include "button.hpp"
 
 
@@ -51,5 +50,5 @@ void buttonReleased(uint8_t btnPin);
 void test();
 void testButtonHandle();
 void setupIO();
-void setupOTA();
+void check_flash();
 #endif
