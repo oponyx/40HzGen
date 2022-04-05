@@ -1,6 +1,6 @@
 :warning: **warning:This device will flash/strobe the light!  Don't use it next to individuals with epilepsy!** :warning:
 
-:warning: **The research has not been tested and has not been proven to work on humans! Use it on your own risk!** :warning:
+:warning: **The research has not been tested and has not been proven to work on humans! Use it at your own risk!** :warning:
 
 
 # 40HzGen
