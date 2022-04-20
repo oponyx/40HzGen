@@ -30,19 +30,24 @@ SOFTWARE.
 #include <EEPROM.h>
 #include <CRC16.h>
 
-#define SETTINGS_VERSION 0x00000010
+#define SETTINGS_VERSION          0x00000010
+
+#ifdef WIFI_DEFAULT_ENABLED
+#define WIFI_DEFAULT_ENABLED WIFI_DEFAULT_ENABLED_OVERRIDE
+#else 
+#define WIFI_DEFAULT_ENABLED         true
+#endif
 
 #ifdef WIFI_DEFAULT_SSID_OVERRIDE
 #define WIFI_DEFAULT_SSID WIFI_DEFAULT_SSID_OVERRIDE
 #else 
-#define WIFI_DEFAULT_SSID "SSID_NONE"
-#define WIFI_SSID_NOT_CONFIGURED "NO-WIFI"
+#define WIFI_DEFAULT_SSID         "SSID_NONE"
 #endif
 
 #ifdef WIFI_DEFAULT_PASSW_OVERRIDE
 #define WIFI_DEFAULT_PASSW WIFI_DEFAULT_PASSW_OVERRIDE
 #else
-#define WIFI_DEFAULT_PASSW "12345678"
+#define WIFI_DEFAULT_PASSW        "12345678"
 #endif
 
 #ifdef AUTOSTART_OVERRIDE
@@ -51,16 +56,18 @@ SOFTWARE.
 #define AUTOSTART false
 #endif
 
-#define AP_DEFAULT_SSID "40Hz_Gen"
-#define AP_DEFAULT_PASSW "12345678"
+#define AP_DEFAULT_SSID           "40Hz_Gen"
+#define AP_DEFAULT_PASSW          "12345678"
 #ifndef DEFAULT_LIGHT_FREQ
-#define DEFAULT_LIGHT_FREQ 40
+#define DEFAULT_LIGHT_FREQ        40
 #endif
 #ifndef DEFAULT_ON_TIME
-#define DEFAULT_ON_TIME 60
+#define DEFAULT_ON_TIME           60
 #endif
-#define DEFAULT_BRIGHTNESS 100
-#define DEFAULT_PWM_FREQ 1000
+#define DEFAULT_BRIGHTNESS        100
+#define DEFAULT_PWM_FREQ          1000
+#define DEFAULT_AUDIO_ENABLED     true
+#define DEFAULT_LIGHT_ENABLED     true
 
 
 
@@ -75,19 +82,19 @@ uint16_t SettingsCRC();
 typedef union {
   uint8_t data;
   struct {
-  uint8_t type      : 3;
-  uint8_t autostart : 1;
-  uint8_t spare1    : 1;
-  uint8_t spare2    : 1;
-  uint8_t spare3    : 1;
-  uint8_t spare4    : 1;
+  uint8_t type            : 3;
+  uint8_t autostart       : 1;
+  uint8_t spare1          : 1;
+  uint8_t wifiEnabled     : 1;
+  uint8_t audioEnabled    : 1;
+  uint8_t lightEnabled    : 1;
   };
 } flags;
 
 typedef struct {
   uint16_t      crc;                        // crc settings
   uint32_t      version;                    // Settings version  
-  flags         settingFlags;                      // Flag Byte Stored in Settings
+  flags         settingFlags;               // Flag Byte Stored in Settings
   char          wifi_ssid[24];              // Wifi SSID Stored in Setting
   char          wifi_psw[24];               // Wifi Password Stored in Setting
   char          ap_ssid[16];                // Access Poin Mode SSID name Stored in Setting

@@ -20,7 +20,7 @@
     button ,input[type=submit] {
       border: 0;
       border-radius: 0.3rem;
-      background: #1fa3ec;
+      background: #3a1fec;
       width: 100%;
       color: #faffff;
       line-height: 2.4rem;
@@ -28,7 +28,10 @@
       transition-duration: 0.4s;
       cursor: pointer;
     }
-    .units { font-size: 1.0rem; }
+    .units { 
+      font-size: 1.0rem;
+      padding-left: .5rem; 
+    }
     .param-labels{
       font-size: 1.0rem;
       vertical-align: middle;
@@ -70,10 +73,10 @@
       transition: .4s;
     }
     input:checked + .slider {
-      background-color: #2196F3;
+      background-color: #3a1fec;
     }
     input:focus + .slider {
-      box-shadow: 0 0 1px #2196F3;
+      box-shadow: 0 0 1px #3a1fec;
     }
 
     input:checked + .slider:before {
@@ -98,71 +101,170 @@
     <div style="width:80%;">
       <h2>40Hz Generator</h2>
       <p> Settings Page</p>
-      <form action="/save_settings" method="POST">
-      <span class="param-labels">WIFI SSID</span> 
-      <input type="text" id="WIFI_SSID" name="WIFI_SSID">
-      <br>
-      <span class="param-labels">WIFI PSW</span> 
-      <input type="text" id="WIFI_PSW" name="WIFI_PSW">
-      <br>
-      <span class="param-labels">AP SSID</span> 
-      <input type="text" id="AP_SSID" name="AP_SSID">
-      <br>
-      <span class="param-labels">AP PSW</span> 
-      <input type="text" id="AP_PSW" name="AP_PSW">
-      <br>
-      <label for="LIGHT_FREQ" class="param-labels">LIGHT_FREQ</label>
-      <input type="number" id="LIGHT_FREQ" name="LIGHT_FREQ" min="1" max="100"><span class="units">Hz</span>
-      <br>
-      <label for="ON_TIME" class="param-labels">ON TIME</label>
-      <input type="number" id="ON_TIME" name="ON_TIME" min="2" max="100"><span class="units">Min</span>
-      <br>
-      <label for="BRIGHTNESS" class="param-labels">Brightness</label>
-      <input type="number" id="BRIGHTNESS" name="BRIGHTNESS" min="10" max="100"><span class="units">%</span>
-      <br>
-      <label for="PWM_FREQ" class="param-labels">PWM Freq</label>
-      <input type="number" id="PWM_FREQ" name="PWM_FREQ" min="1000" max="10000"><span class="units">Hz</span>
-      <br>
-      <br>
-      <label for="AUTOSTART_SW" class="param-labels">Autostart</label>
-      <label class="switch">
-          <input type="checkbox" id="AUTOSTART_SW" name="AUTOSTART_SW">
-          <span class="slider round"></span> 
-      </label>
-      <br>
-      <br>
-      <input type="submit" value="Submit" style="width:80%;">
-      </form> 
+      <table style="width: 100%;"><form action="/save_settings" method="POST">
+        <tr>
+          <td><span class="param-labels">WIFI SSID</span></td>
+          <td><input type="text" id="WIFI_SSID" name="WIFI_SSID"></td>
+        </tr>
+        <tr>
+          <td><span class="param-labels">WIFI PSW</span></td>
+          <td><input type="text" id="WIFI_PSW" name="WIFI_PSW"></td>
+        </tr>
+        <tr>
+          <td><span class="param-labels">AP SSID</span></td> 
+          <td><input type="text" id="AP_SSID" name="AP_SSID"></td>
+        </tr>
+        <tr>
+          <td><span class="param-labels">AP PSW</span></td>
+          <td><input type="text" id="AP_PSW" name="AP_PSW"></td>
+        </tr>
+        <tr>
+          <td><label for="LIGHT_FREQ" class="param-labels">LIGHT_FREQ</label></td>
+          <td><input type="number" id="LIGHT_FREQ" name="LIGHT_FREQ" min="1" max="100"><span class="units">Hz</span></td>
+        </tr>
+        <tr>
+          <td><label for="ON_TIME" class="param-labels">ON TIME</label></td>
+          <td><input type="number" id="ON_TIME" name="ON_TIME" min="2" max="100"><span class="units">Min</span></td>
+        </tr>
+        <tr>
+          <td><label for="BRIGHTNESS" class="param-labels">Brightness</label></td>
+          <td><input type="number" id="BRIGHTNESS" name="BRIGHTNESS" min="10" max="100"><span class="units">%</span></td>
+        </tr>
+        <tr>
+          <td><label for="PWM_FREQ" class="param-labels">PWM Freq</label></td>
+           <td><input type="number" id="PWM_FREQ" name="PWM_FREQ" min="1000" max="10000"><span class="units">Hz</span></td>
+        </tr>
+        <tr>
+          <td><label for="WIFI_ENABLED_SW" class="param-labels">WIFI Enabled</label></td>
+          <td><label class="switch">
+            <input type="checkbox" id="WIFI_ENABLED_SW" name="WIFI_ENABLED_SW">
+            <span class="slider round"></span> 
+          </label></td>
+        </tr>
+        <tr>
+          <td><label for="AUTOSTART_SW" class="param-labels">Autostart</label></td>
+          <td><label class="switch">
+            <input type="checkbox" id="AUTOSTART_SW" name="AUTOSTART_SW">
+            <span class="slider round"></span> 
+          </label></td>
+        </tr>
+        <tr>
+          <td><label for="LIGHT_ENABLED_SW" class="param-labels">Light Enable</label></td>
+          <td><label class="switch">
+            <input type="checkbox" id="LIGHT_ENABLED_SW" name="LIGHT_ENABLED_SW">
+            <span class="slider round"></span> 
+          </label></td>
+        </tr>
+        <tr>
+          <td><label for="AUDIO_ENABLED_SW" class="param-labels">Audio Enabled</label></td>
+          <td><label class="switch">
+            <input type="checkbox" id="AUDIO_ENABLED_SW" name="AUDIO_ENABLED_SW">
+            <span class="slider round"></span> 
+          </label></td>
+        </tr>
+        <tr>
+          <td colspan="2"><input type="submit" value="Save Settings"></td>
+        </tr>
+      </table></form> 
       <br>
       <br>
       <table style="width: 100%"><tbody>
         <tr>
-          <td style="width: 10%"></td>
-          <td  style="width: 80%">     
+          <td>     
             <form id=but1 style="width: 100%;" action='/index.html' method='get'><button>Back to Main Page</button></form>
           </td>
-          <td style="width: 10%"></td>
         </tr>
         <tr>
-          <td style="width: 10%"></td>
-          <td  style="width: 80%">     
+          <td>     
             <form id=but2 style="width: 100%;" action='/update' method='get'><button>Firmware Update</button></form>
           </td>
-          <td style="width: 10%"></td>
         </tr>
-          <td style="width: 10%"></td>
-          <td  style="width: 80%">     
+          <td>     
             <form id=but3" action=''><button style="background: #f50404;" onclick="reboot()">Reboot device</button></form>
           </td>
-          <td style="width: 10%"></td>
         </tr>
       </tbody></table>
     </div>
   </div></cemter>
   <script>
+    var light_en_sw = document.getElementById("LIGHT_ENABLED_SW");
+    var autostart_sw = document.getElementById("AUTOSTART_SW");
+    var audio_en_sw = document.getElementById("AUDIO_ENABLED_SW");
+    var wifi_en_sw = document.getElementById("WIFI_ENABLED_SW");
+
+    wifi_en_sw.onchange = function(value){
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", '/cmnd', true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onreadystatechange = function() { 
+          if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+            console.log("Received data:" + this.responseText);
+            var json_msg = JSON.parse(this.responseText);
+            if(json_msg.result!="OK"){
+              alert("Error setting set_autostart!!");
+            }
+          }
+      }
+      var val = wifi_en_sw.checked
+      xhr.send("cmnd=set_wifi&value=" + val);
+    };
+
+    autostart_sw.onchange = function(value){
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", '/cmnd', true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onreadystatechange = function() { 
+          if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+            console.log("Received data:" + this.responseText);
+            var json_msg = JSON.parse(this.responseText);
+            if(json_msg.result!="OK"){
+              alert("Error setting set_autostart!!");
+            }
+          }
+      }
+      var val = autostart_sw.checked
+      xhr.send("cmnd=set_autostart&value=" + val);
+    };
+
+    audio_en_sw.onchange = function(value){
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", '/cmnd', true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onreadystatechange = function() { 
+          if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+            console.log("Received data:" + this.responseText);
+            var json_msg = JSON.parse(this.responseText);
+            if(json_msg.result!="OK"){
+              alert("Error setting set_audio_en!!");
+            }
+          }
+      }
+      var val = audio_en_sw.checked
+      xhr.send("cmnd=set_audio_en&value=" + val);
+    };
+
+    light_en_sw.onchange = function(value){
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", '/cmnd', true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onreadystatechange = function() { 
+          if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+            console.log("Received data:" + this.responseText);
+            var json_msg = JSON.parse(this.responseText);
+            if(json_msg.result!="OK"){
+              alert("Error setting set_light_en!!");
+            }
+          }
+      }
+      var val = light_en_sw.checked
+      xhr.send("cmnd=set_light_en&value=" + val);
+    };
+
     function reboot(){
-      var xhttp = new XMLHttpRequest();
-      xhttp.onreadystatechange = function() {
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", '/cmnd', true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
           // get json data
           console.log("Received data:" + this.responseText);
@@ -172,8 +274,7 @@
           }
         }
       };
-      xhttp.open("GET", "/reboot", true);
-      xhttp.send();
+      xhr.send("cmnd=reboot&value=true");
     }
 
     window.onload = function(){
@@ -191,7 +292,10 @@
           document.getElementById("ON_TIME").value = json_msg.on_time;
           document.getElementById("BRIGHTNESS").value = json_msg.brightness;
           document.getElementById("PWM_FREQ").value = json_msg.pwm_freq;
-          document.getElementById("AUTOSTART_SW").checked = ((json_msg.autostart == "true") ? true : false);
+          wifi_en_sw.checked = ((json_msg.wifiEnabled == "true") ? true : false);
+          autostart_sw.checked = ((json_msg.autostart == "true") ? true : false);
+          audio_en_sw.checked = ((json_msg.audioEnabled == "true") ? true : false);
+          light_en_sw.checked = ((json_msg.lightEnabled == "true") ? true : false);
         }
       };
       xhttp.open("GET", "/get_settings", true);

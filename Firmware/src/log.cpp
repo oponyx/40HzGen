@@ -1,6 +1,6 @@
 #include "log.h"
 
-size_t m_log(bool nl, const char *format, ... ){
+size_t m_log(bool pr_tstamp, const char *format, ...){
     va_list arg;
     va_start(arg, format);
     char temp[64];
@@ -16,7 +16,7 @@ size_t m_log(bool nl, const char *format, ... ){
         vsnprintf(buffer, len + 1, format, arg);
         va_end(arg);
     }
-    len = (nl) ? Serial.printf("[%lu] %s",millis(), buffer) : Serial.printf("%s", buffer);
+    len = (pr_tstamp) ? Serial.printf("[%lu] %s",millis(), buffer) : Serial.printf("%s", buffer);
     if (buffer != temp) {
         delete[] buffer;
     }

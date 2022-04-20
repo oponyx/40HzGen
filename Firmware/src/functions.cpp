@@ -62,20 +62,20 @@ void check_flash(){
   uint32_t ideSize = ESP.getFlashChipSize();
   FlashMode_t ideMode = ESP.getFlashChipMode();
 
-  m_log(true, "Flash real id:   %08X\n", ESP.getFlashChipId());
-  m_log(true, "Flash real size: %u bytes\n\n", realSize);
+  D_PRINTLN(true, "Flash real id:   %08X", ESP.getFlashChipId());
+  D_PRINTLN(true, "Flash real size: %u bytes", realSize);
 
-  m_log(true, "Flash ide  size: %u bytes\n", ideSize);
-  m_log(true, "Flash ide speed: %u Hz\n", ESP.getFlashChipSpeed());
-  m_log(true, "Flash ide mode:  %s\n", (ideMode == FM_QIO ? "QIO" : ideMode == FM_QOUT ? "QOUT"
+  D_PRINTLN(true, "Flash ide  size: %u bytes", ideSize);
+  D_PRINTLN(true, "Flash ide speed: %u Hz", ESP.getFlashChipSpeed());
+  D_PRINTLN(true, "Flash ide mode:  %s", (ideMode == FM_QIO ? "QIO" : ideMode == FM_QOUT ? "QOUT"
                                                                     : ideMode == FM_DIO  ? "DIO"
                                                                     : ideMode == FM_DOUT ? "DOUT"
                                                                                          : "UNKNOWN"));
 
   if (ideSize != realSize) {
-    m_log(true, "Flash Chip configuration wrong!\n");
+    D_PRINTLN(true, "Flash Chip configuration wrong!");
   } else {
-    m_log(true, "Flash Chip configuration ok.\n");
+    D_PRINTLN(true, "Flash Chip configuration ok.");
   }
 
 }
@@ -144,7 +144,7 @@ extern bool bButtonChanged;
  */
 void buttonShortPressed(uint8_t btnPin){
 #ifdef __DEBUG_BUTTONS__  
-  m_log(true, "buttonShortPressed Callback function called. Argument is:%s\n" , String(btnPin).c_str());
+  D_PRINTLN(true, "buttonShortPressed Callback function called. Argument is:%s" , String(btnPin).c_str());
 #endif
   switch(btnPin){
     case OK_BUTTON_PIN:    
@@ -173,17 +173,17 @@ void buttonShortPressed(uint8_t btnPin){
 
 void buttonLongPressed(uint8_t btnPin){
 #ifdef __DEBUG_BUTTONS__  
-  m_log(true, "buttonLongPressed Callback function called. Argument is:%s\n" , String(btnPin).c_str());
+  D_PRINTLN(true, "buttonLongPressed Callback function called. Argument is:%s" , String(btnPin).c_str());
 #endif  
   bButtonChanged = false;
 }
 
 void buttonPressed(uint8_t btnPin){
-  //m_log(true, "buttonPressed Callback function called. Argument is:%s\n" , String(btnPin).c_str());
+  //D_PRINTLN(true, "buttonPressed Callback function called. Argument is:%s" , String(btnPin).c_str());
 }
 
 void buttonReleased(uint8_t btnPin){
-  //m_log(true, "buttonReleased Callback function called. Argument is:%s\n" , String(btnPin).c_str());
+  //D_PRINTLN(true, "buttonReleased Callback function called. Argument is:%s" , String(btnPin).c_str());
 }  
 
 void test(){
@@ -191,7 +191,7 @@ void test(){
   //hertz2us(80);
   rem_time = (Settings.on_time * 60 - ((millis() - start_millis) / 1000));
   u_long n2 = micros();
-  m_log(true, "usec hertz2us(80):%lu\n", n2-n1);
+  D_PRINTLN(true, "usec hertz2us(80):%lu", n2-n1);
 }
 
 void testButtonHandle(){
@@ -199,7 +199,7 @@ void testButtonHandle(){
   //hertz2us(80);
   okButton.handle();
   u_long n2 = micros();
-  m_log(true, "usec testButtonHandle():%lu\n", n2-n1);
+  D_PRINTLN(true, "usec testButtonHandle():%lu", n2-n1);
 }
 
 
@@ -220,11 +220,11 @@ void start(){
   semiPeriod = hertz2us(Settings.light_freq);
   start_millis = millis();
   Status = deviceStatus_t::STATUS_WORKING;
-  m_log(true, "Freq:%u, Bri:%u, PWM freq:%u uS:%lu\n", Settings.light_freq, Settings.brightness, Settings.pwm_freq, semiPeriod);
+  D_PRINTLN(true, "Freq:%u, Bri:%u, PWM freq:%u uS:%lu", Settings.light_freq, Settings.brightness, Settings.pwm_freq, semiPeriod);
 #ifdef LCD_POPULATED
   dispWorkingPage();
 #endif
-  m_log(true, "Started!!\n");
+  D_PRINTLN(true, "Started!!");
 }
 
 /**
@@ -235,7 +235,7 @@ void stop(){
   Status = deviceStatus_t::STATUS_IDLE;
   rem_time = 0;
   digitalWrite(LIGHT_OUT_PIN, !LIGHT_OUT_ACTIVE_LVL);
-  m_log(true, "Stopped!!\n");
+  D_PRINTLN(true, "Stopped!!");
 #ifdef LCD_POPULATED
   dispReadyPage();
 #endif
@@ -274,36 +274,36 @@ void handleCommands(){
   switch(Command){
     case CMD_GET_SETTINGS_REQ_PARAMS:
       Command = CMD_NO_COMMANDS;
-      if(getSettingsRequestParam(webRequest)){
-        m_log(true, "Settings changed. Rebooting...\n");
-        sendRebootingPage(webRequest);
+      if(getSettingsRequestParam()){
+        D_PRINTLN(true, "Settings changed. Rebooting...");
+        sendRebootingPage();
         //webRequest -> send_P(200, "text/html", rebooting_html);
         Command = CMD_SAVE_SETTING_AND_REBOOT;
       }else{
-          m_log(true, "Settings not changed. Redirecting to index page...\n");
+          D_PRINTLN(true, "Settings not changed. Redirecting to index page...");
           //webRequest->send_P(200, "text/html", index_html);
-          sendIndexPage(webRequest);
+          sendIndexPage();
       }
       break;
     case CMD_SAVE_SETTING_AND_REBOOT:
-      m_log(true, "CMD Save Settings and Reboot detected\n");
+      D_PRINTLN(true, "CMD Save Settings and Reboot detected");
       Command = CMD_NO_COMMANDS;
       delay(1000);
       SettingsWrite();
       ESP.restart();
       break;
     case CMD_REBOOT:
-      m_log(true, "CMD Reboot detected\n");
+      D_PRINTLN(true, "CMD Reboot detected");
       delay(1000);
       ESP.restart();
       break;
     case CMD_START:
-      m_log(true, "CMD start detected\n");
+      D_PRINTLN(true, "CMD start detected");
       Command = CMD_NO_COMMANDS;
       start();
       break;
     case CMD_STOP:
-      m_log(true, "CMD stop detected\n");
+      D_PRINTLN(true, "CMD stop detected");
       Command = CMD_NO_COMMANDS;
       stop();
       break;

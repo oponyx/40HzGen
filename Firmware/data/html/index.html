@@ -21,7 +21,7 @@
       button {
         border: 0;
         border-radius: 0.3rem;
-        background: #1fa3ec;
+        background: #3a1fec;
         width: 100%;
         color: #faffff;
         line-height: 2.4rem;
@@ -190,91 +190,96 @@
     </div></center>
   </body>
   <script>
+    var brightness_slider = document.getElementById("BRIGHTNESS_SLIDER");  
+    var frequence_slider = document.getElementById("FREQUENCE_SLIDER");  
+    var start_button = document.getElementById("BUTT_START");
+    var stop_button = document.getElementById("BUTT_STOP");
+    var frequence_val_el = document.getElementById("FREQUENCE");
+    var brightness_val_el = document.getElementById("BRIGHTNESS");
+    var submit_bri_button = document.getElementById("BUTT_SUBMIT_BRI");
+    var submit_freq_button = document.getElementById("BUTT_SUBMIT_FREQ");
+
     function start(){
-      var xhttp = new XMLHttpRequest();
-      xhttp.onreadystatechange = function() {
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "/cmnd", true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
           // get json data
           console.log("Received data:" + this.responseText);
           var json_msg = JSON.parse(this.responseText);
           if(json_msg.result=="OK"){
-            document.getElementById("BUTT_START").disabled=true;
-            document.getElementById("BUTT_STOP").disabled=false;
+            start_button.disabled=true;
+            stop_button.disabled=false;
           }
         }
       };
-      xhttp.open("GET", "/start", true);
-      xhttp.send();
+      xhr.send("cmnd=start&value=true");
     }
 
     function stop(){
-      var xhttp = new XMLHttpRequest();
-      xhttp.onreadystatechange = function() {
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "/cmnd", true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
           // get json data
           console.log("Received data:" + this.responseText);
           var json_msg = JSON.parse(this.responseText);
           if(json_msg.result=="OK"){
-            document.getElementById("BUTT_START").disabled=false;
-            document.getElementById("BUTT_STOP").disabled=true;
+            start_button.disabled=false;
+            stop_button.disabled=true;
           }
         }
       };
-      xhttp.open("GET", "/stop", true);
-      xhttp.send();
+      xhr.send("cmnd=start&value=false");
     }
 
-    var brightness_slider = document.getElementById("BRIGHTNESS_SLIDER");  
-    var frequence_slider = document.getElementById("FREQUENCE_SLIDER");  
 
     brightness_slider.oninput = function() {
-      //document.getElementById("BRIGHTNESS").innerHTML = this.value;
-      document.getElementById("BUTT_SUBMIT_BRI").disabled=false;
+      //brightness_val_el.innerHTML = this.value;
+      submit_bri_button.disabled=false;
     } 
 
     frequence_slider.oninput = function() {
       //document.getElementById("LIGHT_FREQ").innerHTML = this.value;
-      document.getElementById("BUTT_SUBMIT_FREQ").disabled=false;
+      submit_freq_button.disabled=false;
     } 
 
     function set_bri(){
-      var xhttp = new XMLHttpRequest();
+      var xhr = new XMLHttpRequest();
       var bri_slider_value = brightness_slider.value;
-      xhttp.onreadystatechange = function() {
+      xhr.open("POST", "/cmnd", true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
           // get json data
           console.log("Received data:" + this.responseText);
           var json_msg = JSON.parse(this.responseText);
           bri_slider_value = json_msg.brightness;
-          document.getElementById("BRIGHTNESS").innerHTML = json_msg.brightness;
-          document.getElementById("BUTT_SUBMIT_BRI").disabled=true;
+          brightness_val_el.innerHTML = json_msg.brightness;
+          submit_bri_button.disabled=true;
         }
       };
-      var Data2Send = new FormData(); 
-      Data2Send.append("brightness",  bri_slider_value);
-      console.log("Sending data:" + JSON.stringify(Object.fromEntries(Data2Send)));
-      xhttp.open("POST", "/set_bri", true);
-      xhttp.send(Data2Send);
+      xhr.send("cmnd=set_bri&value=" + bri_slider_value);
     }
 
     function set_freq(){
-      var xhttp = new XMLHttpRequest();
+      var xhr = new XMLHttpRequest();
       var freq_slider_value = frequence_slider.value;
-      xhttp.onreadystatechange = function() {
+      xhr.open("POST", "/cmnd", true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
           // get json data
           console.log("Received data:" + this.responseText);
           var json_msg = JSON.parse(this.responseText);
-          freq_slider_value = json_msg.brightness;
-          document.getElementById("FREQUENCE").innerHTML = json_msg.light_freq;
-          document.getElementById("BUTT_SUBMIT_FREQ").disabled=true;
+          freq_slider_value = json_msg.light_freq;
+          frequence_val_el.innerHTML = json_msg.light_freq;
+          submit_freq_button.disabled=true;
         }
       };
-      var Data2Send = new FormData(); 
-      Data2Send.append("light_freq",  freq_slider_value);
-      console.log("Sending data:" + JSON.stringify(Object.fromEntries(Data2Send)));
-      xhttp.open("POST", "/set_freq", true);
-      xhttp.send(Data2Send);
+      xhr.send("cmnd=set_light_freq&value=" + freq_slider_value);
     }
 
     setInterval( getStatus, 3000 ) ;
@@ -284,39 +289,47 @@
     }
 
     function getStatus() {
-      var xhttp = new XMLHttpRequest();
-      xhttp.onreadystatechange = function() {
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/device_status", true);
+      xhr.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
           // get json data
           console.log("Received data:" + this.responseText);
           var json_msg = JSON.parse(this.responseText);
-          document.getElementById("BRIGHTNESS").innerHTML = json_msg.brightness;
+          brightness_val_el.innerHTML = json_msg.brightness;
           document.getElementById("LIGHT_STATUS").innerHTML = json_msg.light_status;
           document.getElementById("REM_TIME").innerHTML = json_msg.rem_time;
           document.getElementById("AUDIO_STATUS").innerHTML = json_msg.audio_status;
           document.getElementById("LIGHT_ERROR").innerHTML  = json_msg.lightFreqErrorUs;
           document.getElementById("FREE_HEAP").innerHTML = json_msg.free_heap;
           document.getElementById("UP_TIME").innerHTML = json_msg.up_time;
-          document.getElementById("FREQUENCE").innerHTML = json_msg.light_freq;
+          frequence_val_el.innerHTML = json_msg.light_freq;
           document.getElementById("RSSI").innerHTML = json_msg.RSSI;
           if(json_msg.working == true){
             document.getElementById("MESSAGE").innerHTML = "ON";
-            document.getElementById("BUTT_START").disabled=true;
-            document.getElementById("BUTT_STOP").disabled=false;
+            start_button.disabled=true;
+            stop_button.disabled=false;
           }else{
             document.getElementById("MESSAGE").innerHTML = "Ready";
-            document.getElementById("BUTT_START").disabled=false;
-            document.getElementById("BUTT_STOP").disabled=true;
+            start_button.disabled=false;
+            stop_button.disabled=true;
           }
           document.getElementById("OK_BUTTON").innerHTML = json_msg.okButtonStatus;
           document.getElementById("UP_BUTTON").innerHTML = json_msg.upButtonStatus;
           document.getElementById("DOWN_BUTTON").innerHTML = json_msg.downButtonStatus;
           document.getElementById("CANCEL_BUTTON").innerHTML = json_msg.cancelButtonStatus;
           document.getElementById("WIFI_IP").innerHTML = json_msg.wifi_ip;
+          if(submit_freq_button.disabled == true){
+            frequence_val_el.innerHTML = json_msg.light_freq;
+            frequence_slider.value = json_msg.light_freq;
+          }
+          if(submit_bri_button.disabled == true){
+            brightness_val_el.innerHTML = json_msg.brightness;
+            brightness_slider.value = json_msg.brightness;
+          }
         }
       };
-      xhttp.open("GET", "/device_status", true);
-      xhttp.send();
+      xhr.send();
     }
   </script>
 </body>

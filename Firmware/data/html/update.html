@@ -20,13 +20,21 @@
     .button, button ,input[type=submit]{
       border: 0;
       border-radius: 0.3rem;
-      background: #1fa3ec;
+      background: #3a1fec;
       width: 100%;
       color: #faffff;
       line-height: 2.4rem;
       font-size: 1.2rem;
       transition-duration: 0.4s;
       cursor: pointer;
+    }
+    input[type="button"][disabled]
+    {
+      border: 2px outset ButtonFace;
+      color: GrayText;
+      cursor: inherit;
+      background-color: #ddd;
+      background: #ddd;
     }
     input[type=file] {
         font-size: 1.2rem;
@@ -35,8 +43,7 @@
         height:0.5rem;
         width:0%;
         padding: 5px 0;
-        border: 1px solid #008aff;
-        background: #002180;
+        background: #3a1fec;
         text-align: center;
         color: white;
         border-radius: .5rem;
@@ -50,12 +57,13 @@
   <center><div class="main">  
     <div style="width:80%;">
       <h2>40Hz Generator</h2>
+      <p>Firmware update Page</p>
       <form method="POST" action="" enctype="multipart/form-data" id="upload_form">
         <input type="file" name="update" accept='.bin' id="file" onchange="fileSelected();">
         <br>
         <p>File size:<span id="FILESIZE">File not selected</span></p> 
         <br>
-        <input type="button" class="button" value="Update" onclick="uploadFirmware();" /> 
+        <input id="START_UPDATE_BTN" type="button" class="button" value="Update" onclick="uploadFirmware();" disabled/> 
       </form>
       <br>
       <div align="left" id="prg_wrap" style="border: 1px solid; width: 100%; border-radius: .5rem;">
@@ -79,6 +87,7 @@
       }
       fSize = myFile.size;
       document.getElementById('FILESIZE').innerHTML = bytesToSize(fSize);
+      document.getElementById('START_UPDATE_BTN').disabled = false;
     }
 
     function bytesToSize(bytes) {

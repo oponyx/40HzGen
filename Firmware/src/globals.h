@@ -45,5 +45,4 @@ typedef enum {
 } deviceStatus_t ;
 
 extern deviceStatus_t Status;
-extern AsyncWebServerRequest *webRequest;
 #endif

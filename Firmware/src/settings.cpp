@@ -45,10 +45,10 @@ uint8_t SettingsRead(){
   EEPROM.end();
 
   if(Settings.crc != SettingsCRC()){
-      // m_log(true, "CRC Settings doesn't match!!\n");
+      // DEBUG_PRINTLN("CRC Settings doesn't match!!\n");
       return ERROR_SETTINGS_CRC;
   }
-  //m_log(true, "Configuration loaded\n");
+  //DEBUG_PRINTLN("Configuration loaded\n");
   return NO_ERRORS;
 }
 
@@ -66,7 +66,7 @@ uint8_t SettingsWrite(){
   EEPROM.commit();
   EEPROM.end();
 
-  //m_log(true, "Configuration saved\n");
+  //DEBUG_PRINTLN("Configuration saved\n");
   return NO_ERRORS;
 }
 
@@ -76,16 +76,19 @@ uint8_t SettingsWrite(){
  * @return uint8_t 
  */
 uint8_t restoreDefaultSettings(){
-  Settings.version = SETTINGS_VERSION;
-  Settings.settingFlags.autostart = AUTOSTART;
-  strcpy(Settings.wifi_ssid,WIFI_DEFAULT_SSID);
+  Settings.version                      = SETTINGS_VERSION;
+  Settings.settingFlags.autostart       = AUTOSTART;
+  Settings.light_freq                   = DEFAULT_LIGHT_FREQ;
+  Settings.on_time                      = DEFAULT_ON_TIME;
+  Settings.brightness                   = DEFAULT_BRIGHTNESS;
+  Settings.pwm_freq                     = DEFAULT_PWM_FREQ;
+  Settings.settingFlags.audioEnabled    = DEFAULT_AUDIO_ENABLED;
+  Settings.settingFlags.lightEnabled    = DEFAULT_LIGHT_ENABLED;
+  Settings.settingFlags.wifiEnabled     = WIFI_DEFAULT_ENABLED;
+  strcpy(Settings.wifi_ssid, WIFI_DEFAULT_SSID);
   strcpy(Settings.wifi_psw, WIFI_DEFAULT_PASSW);
   strcpy(Settings.ap_ssid, AP_DEFAULT_SSID);
   strcpy(Settings.ap_psw, AP_DEFAULT_PASSW);
-  Settings.light_freq = DEFAULT_LIGHT_FREQ;
-  Settings.on_time = DEFAULT_ON_TIME;
-  Settings.brightness = DEFAULT_BRIGHTNESS;
-  Settings.pwm_freq = DEFAULT_PWM_FREQ;
   Settings.crc = SettingsCRC();
   SettingsWrite();
   return NO_ERRORS;

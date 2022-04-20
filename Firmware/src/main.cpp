@@ -30,9 +30,6 @@ python c:/Users/op/.platformio/packages/espota/espota.py -i 192.168.1.174  -f .p
 
 */
 #include <Arduino.h>
-#include <stdint.h>
-
-//#include <ArduinoOTA.h>
 
 #include "hw_config.h"
 #include "config_override.h"
@@ -50,8 +47,8 @@ python c:/Users/op/.platformio/packages/espota/espota.py -i 192.168.1.174  -f .p
 
 
 bool bDisplayUpdated;         // 'Display is updated' flag
-bool bLastLightStatus;
-u_long lastLigtSwitch;
+bool bOutputStatus;
+u_long lastSwitch;
 bool bButtonChanged=false;
 deviceStatus_t Status;
 
@@ -81,24 +78,27 @@ void setup() {
 
   Serial.begin(115200);
   // load settings
-  m_log(false, "\n");
-  m_log(true, "Serial ok\n");
+  D_PRINT(false, "\n");
+  D_PRINTLN(true, "Serial ok");
   
   // restore default settings if okButton pressed at powerup
-  m_log(true, "Checking if button pressed for reset to default settings\n");
-  delay(1000);
-  if(digitalRead(OK_BUTTON_PIN) == OK_BUTT_ACTIVE_LVL){
-    m_log(false, "Restoring default settings...");
-    restoreDefaultSettings();
+  D_PRINT(true, "Checking if button pressed for reset to default settings...");
+  ulong ms = millis();
+  while (millis() < (ms + 1000)){
+    if(digitalRead(OK_BUTTON_PIN) == OK_BUTT_ACTIVE_LVL){
+      D_PRINT(true, "Restoring default settings...");
+      restoreDefaultSettings();
+    }
   }
+  D_PRINTLN(false, "Done");
 
-  m_log(true, "Loading Settings..");
+  D_PRINT(true, "Loading Settings..");
   uint8_t result = SettingsRead();
   if( result != 0 ){
     switch ( result )
     {
     case ERROR_SETTINGS_CRC:
-        m_log(false, "\nError: Bad CRC on settings datas\nResoring default settings.\n");
+        D_PRINT(true, "\nError: Bad CRC on settings datas\nResoring default settings.\n");
         restoreDefaultSettings();
       break;
     
@@ -106,15 +106,15 @@ void setup() {
       break;
     }
   }else{
-    m_log(false, "Ok\n");
+    D_PRINT(false, "Ok\n");
   }
 
 #ifdef LCD_POPULATED
-  m_log(true, "Setting up Display...");
+  D_PRINT(true, "Setting up Display...");
   if(display_init()){
-    m_log(false, "FAIL!\n");
+    D_PRINTLN(false, "FAIL!");
   }
-  m_log(false, "Ok.\n");
+  D_PRINTLN(false, "Ok.");
 
   dispLogoPage();
   delay(1000);
@@ -127,33 +127,41 @@ void setup() {
   
   display.printf("Setting up WIFI...");
 #endif
-  m_log(true, "Setting up WIFI...");
-  if(!wifi_setup()){
-    m_log(false, "WIFI connection KO!\n");   
+
+  if(Settings.settingFlags.wifiEnabled){
+    D_PRINT(true, "Setting up WIFI...");
+    if(!wifi_setup()){
+      D_PRINTLN(false, "WIFI connection KO!");   
+    }
+    else{
+      D_PRINTLN(false, "OK!");
+      D_PRINTLN(true, "WIFI connection Successful");
+      D_PRINTLN(true, "WIFI IP Address is:%s", WiFi.localIP().toString().c_str() );
+    }
   }
   else{
-    m_log(false, "OK!\n");
-    m_log(true, "WIFI connection Successful\n");
-    m_log(true, "WIFI IP Address is:%s\n", WiFi.localIP().toString().c_str() );
+    D_PRINTLN(true, "Wifi is NOT enabled!!");
   }
-  m_log(true, "Setting up AP...");
+
+
+  D_PRINT(true, "Setting up AP...");
   if(!AP_setup()){  
-    m_log(false, "KO!!");
+    D_PRINTLN(false, "KO!!");
   }
   else{
-    m_log(false, "OK!\n");
-    m_log(true, "AP IP address = %s\n" ,  WiFi.softAPIP().toString().c_str());
+    D_PRINTLN(false, "OK!");
+    D_PRINTLN(true, "AP IP address = %s" ,  WiFi.softAPIP().toString().c_str());
 #ifdef LCD_POPULATED
     display.println(WiFi.softAPIP());
 #endif
   }
 
 
-  m_log(true, "Starting web server...");
+  D_PRINT(true, "Starting web server...");
   if (web_serv_setup() == NO_ERRORS) {
-    m_log(false, "OK!\n");
+    D_PRINTLN(false, "OK!");
   }else{
-    m_log(false, "<<<<<<<<<<<<< ERROR!");
+    D_PRINTLN(true, "<<<<<<<<<<<<< ERROR!");
   }
 
   setupIO();
@@ -166,15 +174,17 @@ void setup() {
   dispReadyPage();
 #endif
   digitalWrite(LIGHT_OUT_PIN,!LIGHT_OUT_ACTIVE_LVL); // test output end
-  m_log(true, "WIFI SSID:%s\n", Settings.wifi_ssid);
-  m_log(true, "WIFI PWD:%s\n", Settings.wifi_psw);
-  m_log(true, "AP SSID:%s\n", Settings.ap_ssid);
-  m_log(true, "AP PWD:%s\n", Settings.ap_psw);
-  m_log(true, "Light Freq:%u\n", Settings.light_freq);
-  m_log(true, "On time:%u\n", Settings.on_time);
-  m_log(true, "Brightness:%u\n", Settings.brightness);
-  m_log(true, "PWM Freq:%u\n", Settings.pwm_freq);
-  m_log(true, "Autostart:%s\n", (Settings.settingFlags.autostart == true ) ? "ON" : "OFF");
+  D_PRINTLN(true, "WIFI SSID:%s", Settings.wifi_ssid);
+  D_PRINTLN(true, "WIFI PWD:%s", Settings.wifi_psw);
+  D_PRINTLN(true, "AP SSID:%s", Settings.ap_ssid);
+  D_PRINTLN(true, "AP PWD:%s", Settings.ap_psw);
+  D_PRINTLN(true, "Light Freq:%u", Settings.light_freq);
+  D_PRINTLN(true, "On time:%u", Settings.on_time);
+  D_PRINTLN(true, "Brightness:%u", Settings.brightness);
+  D_PRINTLN(true, "PWM Freq:%u", Settings.pwm_freq);
+  D_PRINTLN(true, "Autostart:%s", (Settings.settingFlags.autostart == true ) ? "ON" : "OFF");
+  D_PRINTLN(true, "lightEnabled:%s", (Settings.settingFlags.lightEnabled == true ) ? "ON" : "OFF");
+  D_PRINTLN(true, "audioEnabled:%s", (Settings.settingFlags.audioEnabled == true ) ? "ON" : "OFF");
 
   attachInterrupt(digitalPinToInterrupt(OK_BUTTON_PIN), buttonChangedISR, CHANGE);
 
@@ -184,9 +194,11 @@ void setup() {
   
   /// tests
   //check_flash();
-  //m_log(true, "Size of indexp:%d\n", sizeof(index_page));
+  //D_PRINTLN(true, "Size of indexp:%d\n", sizeof(index_page));
   //test();
   //testButtonHandle();
+  //system_phy_set_powerup_option(0);  // 3 to reset RF CALIBRATION
+
 }
 
 /**
@@ -198,13 +210,12 @@ void loop() {
     //bButtonChanged = false;
     okButton.handle();// only button handling always checked, other buttons only when not working
   }
-
   handleCommands();
+
   if((millis()-mills_2)>499){
     mills_2=millis();
     bHalfSecond=!bHalfSecond;
   }
-
   //flash status led
   #ifdef STATUS_LED
   digitalWrite(STATUS_LED, (bHalfSecond == true) ? STATUS_LED_ATIVE_LVL : !STATUS_LED_ATIVE_LVL );   
@@ -213,20 +224,27 @@ void loop() {
   if( Status == deviceStatus_t::STATUS_WORKING ){
     // light switch
     u_long now = micros();
-    u_long diff = now - lastLigtSwitch;
+    u_long diff = now - lastSwitch;
     
     if( diff >= semiPeriod ){
-      (bLastLightStatus == false) ? analogWrite(LIGHT_OUT_PIN, (LIGHT_OUT_ACTIVE_LVL)  ? (int)(Settings.brightness) : 100 -(int)(Settings.brightness)) : digitalWrite(LIGHT_OUT_PIN, !LIGHT_OUT_ACTIVE_LVL);
+      if(Settings.settingFlags.lightEnabled){
+      (bOutputStatus == false) ? analogWrite(LIGHT_OUT_PIN, (LIGHT_OUT_ACTIVE_LVL)  ? (int)(Settings.brightness) : 100 -(int)(Settings.brightness)) : digitalWrite(LIGHT_OUT_PIN, !LIGHT_OUT_ACTIVE_LVL);
+      //if(lightFreqErrorUs > maxLightFreqErrorUs ) maxLightFreqErrorUs = lightFreqErrorUs;
+      }
+#ifdef AUDIO_OUT_PIN
+      if(Settings.settingFlags.audioEnabled){
+        digitalWrite(AUDIO_OUT_PIN, (AUDIO_OUT_ACTIVE_LVL) ? bOutputStatus : !bOutputStatus);
+      }
+#endif
       lightFreqErrorUs = diff - semiPeriod;  // calculate error
-      if(lightFreqErrorUs > maxLightFreqErrorUs ) maxLightFreqErrorUs = lightFreqErrorUs;
-      bLastLightStatus = !bLastLightStatus;
-      lastLigtSwitch = now ; 
+      bOutputStatus = !bOutputStatus;
+      lastSwitch = now ; 
     }
 
     // check for working timeout
     rem_time = (Settings.on_time * 60 - ((millis() - start_millis) / 1000)); // 14 uS
     if(rem_time<=0){
-      m_log(true, "Timed Out\n");
+      D_PRINTLN(true, "Timed Out");
       stop();
     }  
   }
@@ -241,10 +259,5 @@ void loop() {
 #ifdef DOWN_BUTTON_PIN      
       downButton.handle();
 #endif      
-
-      //ArduinoOTA.handle();
-  }
-  //display.display();
-  
+  }  
 }
-

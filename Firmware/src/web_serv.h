@@ -27,11 +27,13 @@ SOFTWARE.
 #define _WEB_SERV_H_
 
 #include <ESPAsyncWebServer.h>
+#include <AsyncJson.h>
+#include <ArduinoJson.h>
 
 #define WEB_MODULE          "WEB"
 #define WEB_METHOD_GET      "GET"
 #define WEB_METHOD_POST     "POST"
-#define WEB_SERVER_NAME "ESP Async Web Server"
+#define WEB_SERVER_NAME     "ESP Async Web Server"
 
 
 extern AsyncWebServer web_server;
@@ -39,15 +41,10 @@ extern AsyncWebServer web_server;
 uint16_t web_serv_setup();
 String status_req_handler();
 String processor(const String& var);
-void sendRebootingPage(AsyncWebServerRequest *webRequest);
-void sendIndexPage(AsyncWebServerRequest *webRequest);
-
+void sendRebootingPage();
+void sendIndexPage();
+void onNotFound(AsyncWebServerRequest *request);
 void handleRoot(AsyncWebServerRequest *request);
-void handleStop(AsyncWebServerRequest *request);
-void handleStart(AsyncWebServerRequest *request);
-void handleReboot(AsyncWebServerRequest *request);
-void handleSetBri(AsyncWebServerRequest *request);
-void handleSetFreq(AsyncWebServerRequest *request);
 void handleUpdateGET(AsyncWebServerRequest *request);
 void handleUpdatePOST(AsyncWebServerRequest *request);
 void handleGetSettings(AsyncWebServerRequest *request);
@@ -55,9 +52,10 @@ void handleDeviceStatus(AsyncWebServerRequest *request);
 void handleSaveSettings(AsyncWebServerRequest *request);
 void handleSettingsPage(AsyncWebServerRequest *request);
 void handleUpdateProgress(AsyncWebServerRequest *request);
-bool getSettingsRequestParam(AsyncWebServerRequest *request);
+bool getSettingsRequestParam();
 void firmwareUploadHandler(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
-
-
+void sendJsonError(AsyncWebServerRequest* request, String result, uint16_t err_code, String error_message);
+void parseCommand(AsyncWebServerRequest *request);
+void onCmnd(AsyncWebServerRequest * request);
 
 #endif

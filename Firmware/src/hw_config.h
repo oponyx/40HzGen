@@ -60,6 +60,8 @@ RX  3
 #define LIGHT_OUT_PIN           15  // D8
 #define LIGHT_OUT_ACTIVE_LVL    HIGH
 #define AUDIO_OUT_PIN           2   // D4
+#define AUDIO_OUT_ACTIVE_LVL    LOW
+
 #define STATUS_LED              LED_BUILTIN
 #define STATUS_LED_ATIVE_LVL    HIGH
 
