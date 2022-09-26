@@ -185,6 +185,8 @@
           <span>Wifi ip:<span id="WIFI_IP"></span>
           <br>
           <span>Wifi RSSI:<span id="RSSI"></span>
+          <br>
+          <span>Ver.:<span id="FW_VER"></span>
         </div>
       </div>
     </div></center>
@@ -256,8 +258,8 @@
           // get json data
           console.log("Received data:" + this.responseText);
           var json_msg = JSON.parse(this.responseText);
-          bri_slider_value = json_msg.brightness;
-          brightness_val_el.innerHTML = json_msg.brightness;
+          bri_slider_value = json_msg.value;
+          brightness_val_el.innerHTML = json_msg.value;
           submit_bri_button.disabled=true;
         }
       };
@@ -274,8 +276,8 @@
           // get json data
           console.log("Received data:" + this.responseText);
           var json_msg = JSON.parse(this.responseText);
-          freq_slider_value = json_msg.light_freq;
-          frequence_val_el.innerHTML = json_msg.light_freq;
+          freq_slider_value = json_msg.value;
+          frequence_val_el.innerHTML = json_msg.value;
           submit_freq_button.disabled=true;
         }
       };
@@ -305,7 +307,7 @@
           document.getElementById("UP_TIME").innerHTML = json_msg.up_time;
           frequence_val_el.innerHTML = json_msg.light_freq;
           document.getElementById("RSSI").innerHTML = json_msg.RSSI;
-          if(json_msg.working == true){
+          if(json_msg.working == "true"){
             document.getElementById("MESSAGE").innerHTML = "ON";
             start_button.disabled=true;
             stop_button.disabled=false;
@@ -319,6 +321,7 @@
           document.getElementById("DOWN_BUTTON").innerHTML = json_msg.downButtonStatus;
           document.getElementById("CANCEL_BUTTON").innerHTML = json_msg.cancelButtonStatus;
           document.getElementById("WIFI_IP").innerHTML = json_msg.wifi_ip;
+          document.getElementById("FW_VER").innerHTML = json_msg.fw_ver;
           if(submit_freq_button.disabled == true){
             frequence_val_el.innerHTML = json_msg.light_freq;
             frequence_slider.value = json_msg.light_freq;

@@ -43,6 +43,7 @@ python c:/Users/op/.platformio/packages/espota/espota.py -i 192.168.1.174  -f .p
 #include "error_codes.h"
 #include "button.hpp"
 #include "graphic.h"
+#include "version.h"
 
 
 
@@ -248,7 +249,7 @@ void loop() {
       stop();
     }  
   }
-  else{ // not working
+  else{ // not working not in menu
       okButton.handle();
 #ifdef CANCEL_BUTTON_PIN      
       cancelButton.handle();
@@ -259,5 +260,9 @@ void loop() {
 #ifdef DOWN_BUTTON_PIN      
       downButton.handle();
 #endif      
-  }  
+  }
+  
+  if(Status == deviceStatus_t::STATUS_MENU ){
+    menu();
+  }
 }

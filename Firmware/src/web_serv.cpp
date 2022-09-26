@@ -23,10 +23,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#include <AsyncJson.h>
-#include <ArduinoJson.h>
+
 #include <Updater.h>
 #include <StreamString.h>
+
+//#define USE_ARDUINO_JSON_LIB
+#ifdef USE_ARDUINO_JSON_LIB
+#include <AsyncJson.h>
+#include <ArduinoJson.h>
+#endif
 
 #include "web_serv.h"
 #include "globals.h"
@@ -36,6 +41,7 @@ SOFTWARE.
 #include "error_codes.h"
 #include "config.h"
 #include "log.h"
+#include "version.h"
 
 // compressed html pages
 #include "index.html.h"
@@ -52,8 +58,6 @@ AsyncWebServerRequest *webRequest;
 const char TEXTHTML[] PROGMEM =     "text/html";
 const char TEXTPLAIN[] PROGMEM =    "text/plain";
 size_t firmwareUpdateProgress =     0;
-const size_t CAPACITY = JSON_OBJECT_SIZE(1);
-
 
 /**
  * @brief Function to init the web server
@@ -88,7 +92,7 @@ uint16_t web_serv_setup(){
 
 void onNotFound(AsyncWebServerRequest *request){
   AsyncWebServerResponse *response = request->beginResponse(404, "text/plain", "Not Found!");
-  response->addHeader("Server", WEB_SERVER_NAME);
+  response->addHeader(F("Server"), F(WEB_SERVER_NAME));
   request->send(response);
 }
 
@@ -97,22 +101,53 @@ void handleRoot(AsyncWebServerRequest *request){
   D_PRINTLN(true, "WEB: %s request '/' from %s", WEB_METHOD_GET, request->client()->remoteIP().toString().c_str());
 #endif
   AsyncWebServerResponse* response = request->beginResponse_P(200, FPSTR(TEXTHTML), (const uint8_t *)index_html, index_html_len);
-  response->addHeader("Content-Encoding", "gzip"); 
+  response->addHeader(F("Content-Encoding"), F("gzip")); 
   request->send(response);
 }
+
+#ifndef USE_ARDUINO_JSON_LIB
+const char *deviceStatusJsnMsg = "{"
+  "\"working\":\"%s\"," 
+  "\"light_status\":\"%s\"," 
+  "\"rem_time\":\"%lu\"," 
+  "\"audio_status\":\"%s\"," 
+  "\"light_freq\":\"%d\"," 
+  "\"free_heap\":\"%d\"," 
+  "\"WiFi_ssid\":\"%s\"," 
+  "\"up_time\":\"%lu\"," 
+  "\"brightness\":\"%d\"," 
+  "\"pwm_freq\":\"%d\"," 
+  "\"RSSI\":\"%d\"," 
+  "\"okButtonStatus\":\"%s\"," 
+#ifdef CANCEL_BUTTON_PIN
+  "\"okButtonStatus\":\"%s\"," 
+#endif
+#ifdef UP_BUTTON_PIN
+  "\"upButtonStatus\":\"%s\"," 
+#endif
+#ifdef DOWN_BUTTON_PIN
+  "\"downButtonStatus\":\"%s\"," 
+#endif
+  "\"lightFreqErrorUs\":\"%lu\"," 
+  "\"wifi_ip\":\"%s\","
+  "\"fw_ver\":\"%s\"" 
+"}";
+#endif //#ifndef USE_ARDUINO_JSON_LIB
 
 
 void handleDeviceStatus(AsyncWebServerRequest *request){
 #ifdef __DEBUG_40HZ_WEB__
   D_PRINTLN(true, "WEB: %s request '/device_status' from %s", WEB_METHOD_GET, request->client()->remoteIP().toString().c_str());
 #endif
+
+#ifdef USE_ARDUINO_JSON_LIB
   AsyncJsonResponse * resp = new AsyncJsonResponse();
-  //resp->addHeader("Server", WEB_SERVER_NAME);
+  //resp->addHeader(F("Server"), F(WEB_SERVER_NAME));
   JsonObject root = resp->getRoot();
   root["working"] = (Status == deviceStatus_t::STATUS_WORKING) ? true : false;
   root["light_status"] = (Status == deviceStatus_t::STATUS_WORKING) ? "ON" : "OFF";
   root["rem_time"] = (Status == deviceStatus_t::STATUS_WORKING) ? rem_time : 0;
-#ifdef LIGHT_OUT_PIN
+#ifdef AUDIO_OUT_PIN
   root["audio_status"] = (Status == deviceStatus_t::STATUS_WORKING) ? "ON" : "OFF";
 #else
   root["audio_status"] = "unknown";
@@ -136,34 +171,102 @@ void handleDeviceStatus(AsyncWebServerRequest *request){
 #endif
   root["lightFreqErrorUs"] = (Status == deviceStatus_t::STATUS_WORKING) ? lightFreqErrorUs : 0;
   root["wifi_ip"] = (WiFi.status() == WL_CONNECTED) ? WiFi.localIP().toString() : "Not connected";
+  root["fw_ver"] = FW_VERSION;
   resp->setLength();
   request->send(resp);
+#else
+  char buffer[1024];
+  snprintf(buffer, sizeof(buffer), deviceStatusJsnMsg,
+              (Status == deviceStatus_t::STATUS_WORKING) ? "true" : "false",
+              (Status == deviceStatus_t::STATUS_WORKING) ? "ON" : "OFF",
+              (Status == deviceStatus_t::STATUS_WORKING) ? rem_time : 0,
+#ifdef AUDIO_OUT_PIN
+              (Status == deviceStatus_t::STATUS_WORKING) ? "ON" : "OFF",
+#else
+              "unknown",
+#endif
+              Settings.light_freq,
+              ESP.getFreeHeap(),
+              WiFi.SSID().c_str(),
+              millis(),
+              Settings.brightness,
+              Settings.pwm_freq,
+              WiFi.RSSI(),
+              ( okButton.status() == true ) ? "true" : "false",
+#ifdef CANCEL_BUTTON_PIN
+              ( cancelButton.status() == true ) ? "true" : "false",
+#endif
+#ifdef UP_BUTTON_PIN
+              ( upButton.status() == true ) ? "true" : "false",
+#endif
+#ifdef DOWN_BUTTON_PIN
+              ( downButton.status() == true ) ? "true" : "false",
+#endif
+              (Status == deviceStatus_t::STATUS_WORKING) ? lightFreqErrorUs : 0,
+              (WiFi.status() == WL_CONNECTED) ? WiFi.localIP().toString().c_str() : "Not connected",
+              FW_VERSION);
+  request->send(200, "application/json", buffer);
+
+#endif //#ifdef USE_ARDUINO_JSON_LIB
 }
 
 void handleSaveSettings(AsyncWebServerRequest *request){
 #ifdef __DEBUG_40HZ_WEB__
-    D_PRINTLN(true, "WEB: %s request '/save_settings' from %s",WEB_METHOD_GET, request->client()->remoteIP().toString().c_str());
+  D_PRINTLN(true, "WEB: %s request '/save_settings' from %s",WEB_METHOD_GET, request->client()->remoteIP().toString().c_str());
 #endif
-    webRequest = request;
-    Command = CMD_GET_SETTINGS_REQ_PARAMS;
-  }
+  webRequest = request;
+  Command = CMD_GET_SETTINGS_REQ_PARAMS;
+}
 
+#ifndef USE_ARDUINO_JSON_LIB
+const char* updateProgressJsnMsg =
+"{"
+  "\"progress\":\"%d\"" 
+"}";
+#endif
 void handleUpdateProgress(AsyncWebServerRequest *request){
   // send progress
+#ifdef USE_ARDUINO_JSON_LIB
   AsyncJsonResponse * resp = new AsyncJsonResponse();
-  //resp->addHeader("Server", WEB_SERVER_NAME);
+  //resp->addHeader(F("Server"), F(WEB_SERVER_NAME));
   JsonObject root = resp->getRoot();
   root["progress"] = firmwareUpdateProgress;
   resp->setLength();
   request->send(resp);
-  }
+#else
+  char buffer[128];
+  snprintf(buffer, sizeof(buffer), updateProgressJsnMsg,firmwareUpdateProgress);
+  request->send(200, "application/json", buffer);
+#endif
+}
+
+#ifndef USE_ARDUINO_JSON_LIB
+const char *settingsJsnMsg = "{"
+  "\"crc\":\"%d\"," 
+  "\"version\":\"%d\"," 
+  "\"wifi_ssid\":\"%s\"," 
+  "\"wifi_psw\":\"%s\"," 
+  "\"ap_ssid\":\"%s\"," 
+  "\"ap_psw\":\"%s\"," 
+  "\"light_freq\":\"%d\"," 
+  "\"on_time\":\"%d\"," 
+  "\"brightness\":\"%d\"," 
+  "\"pwm_freq\":\"%d\"," 
+  "\"autostart\":\"%s\"," 
+  "\"lightEnabled\":\"%s\"," 
+  "\"audioEnabled\":\"%s\"," 
+  "\"wifiEnabled\":\"%s\"" 
+  "}";
+#endif
 
 void handleGetSettings(AsyncWebServerRequest *request){
 #ifdef __DEBUG_40HZ_WEB__
   D_PRINTLN(true, "WEB: %s request '/get_settings' from %s", WEB_METHOD_GET, request->client()->remoteIP().toString().c_str());
 #endif
+
+#ifdef USE_ARDUINO_JSON_LIB
   AsyncJsonResponse * resp = new AsyncJsonResponse();
-  //resp->addHeader("Server", WEB_SERVER_NAME);
+  //resp->addHeader(F("Server"), F(WEB_SERVER_NAME));
   JsonObject root = resp->getRoot();
   root["crc"] = Settings.crc;
   root["version"] = Settings.version;
@@ -182,6 +285,17 @@ void handleGetSettings(AsyncWebServerRequest *request){
 
   resp->setLength();
   request->send(resp);
+#else
+  char buffer[1024];
+  snprintf(buffer, sizeof(buffer), settingsJsnMsg, 
+      Settings.crc, Settings.version, Settings.wifi_ssid, Settings.wifi_psw, Settings.ap_ssid,
+      Settings.ap_psw, Settings.light_freq, Settings.on_time, Settings.brightness, 
+      Settings.pwm_freq,(Settings.settingFlags.autostart) ? "true" : "false",
+      (Settings.settingFlags.lightEnabled) ? "true" : "false",
+      (Settings.settingFlags.audioEnabled) ? "true" : "false",
+      (Settings.settingFlags.wifiEnabled) ? "true" : "false");
+  request->send(200, "application/json", buffer);
+#endif //#ifdef USE_ARDUINO_JSON_LIB
 }
 
 void handleUpdateGET(AsyncWebServerRequest *request){
@@ -189,7 +303,7 @@ void handleUpdateGET(AsyncWebServerRequest *request){
   D_PRINTLN(true, "WEB: %s request '/update' from %s", WEB_METHOD_GET, request->client()->remoteIP().toString().c_str());
 #endif
   AsyncWebServerResponse* response = request->beginResponse_P(200, FPSTR(TEXTHTML), (const uint8_t *)update_html, update_html_len);
-  response->addHeader("Content-Encoding", "gzip");
+  response->addHeader(F("Content-Encoding"), F("gzip"));
   request->send(response);
 }
 
@@ -229,7 +343,7 @@ void handleSettingsPage(AsyncWebServerRequest *request){
   D_PRINTLN(true, "WEB: %s request '/settings' from %s", WEB_METHOD_GET, request->client()->remoteIP().toString().c_str());
 #endif
   AsyncWebServerResponse* response = request->beginResponse_P(200, FPSTR(TEXTHTML), (const uint8_t *)settings_html, settings_html_len);
-  response->addHeader("Content-Encoding", "gzip");
+  response->addHeader(F("Content-Encoding"), F("gzip"));
   request->send(response); //, processor
 }
 
@@ -286,6 +400,16 @@ void onCmnd(AsyncWebServerRequest * request){
   parseCommand(request);
 }
 
+#ifndef USE_ARDUINO_JSON_LIB
+const char* valueAnswerJsnMsg =
+"{"
+  "\"result\":\"%s\"," 
+  "\"error_code\":\"%d\"," 
+  "\"error_message\":\"%s\"," 
+  "\"value\":\"%s\""   
+"}";
+#endif
+
 /**
  * @brief Parse POST command data
  * 
@@ -293,13 +417,14 @@ void onCmnd(AsyncWebServerRequest * request){
  */
 void parseCommand(AsyncWebServerRequest *request)
 {
+  String value = "Value not setted";
   if(request->hasParam("cmnd", true)){
     if(!request->hasParam("value", true)){
       sendJsonError(request, "error", ERROR_INVALID_CMND, "Value param not received");
       return;
     }
     String cmnd = request->getParam("cmnd", true)->value();
-    String value = request->getParam("value", true)->value();
+    value = request->getParam("value", true)->value();
     if (cmnd == "set_light_en") {         
       Settings.settingFlags.lightEnabled = (value == "true") ?  true : false;
     } else if (cmnd == "set_audio_en") {
@@ -311,13 +436,15 @@ void parseCommand(AsyncWebServerRequest *request)
     } else if (cmnd == "start") {
       Command = (value == "true") ? CMD_START : CMD_STOP;
     } else if (cmnd == "set_light_freq") {
-      long val = request->getParam("value", true)->value().toInt();
+      long val = value.toInt();
       // check min/max 
       val = ( val < MIN_LIGHT_FREQ ) ? MIN_LIGHT_FREQ : val ;
       val = ( val > MAX_LIGHT_FREQ ) ? MAX_LIGHT_FREQ : val ;
       Settings.light_freq = val;
+      // send answer
+#ifdef USE_ARDUINO_JSON_LIB
       AsyncJsonResponse * resp = new AsyncJsonResponse();
-      //resp->addHeader("Server", WEB_SERVER_NAME);
+      //resp->addHeader(F("Server)", F(WEB_SERVER_NAME));
       JsonObject root = resp->getRoot();
       root["result"] = "OK";
       root["error_code"] = NO_ERRORS;
@@ -325,15 +452,19 @@ void parseCommand(AsyncWebServerRequest *request)
       root["light_freq"] = Settings.light_freq;
       resp->setLength();
       request->send(resp);
+#else
+      sendJsonError(request, "OK", NO_ERRORS, "No Errors",  String(Settings.light_freq).c_str()); 
+#endif
       return;
     }  else if (cmnd == "set_bri") {
-      long val = request->getParam("value", true)->value().toInt();
+      long val = value.toInt();
       // check min/max 
-      val = ( val < MIN_LIGHT_FREQ ) ? MIN_LIGHT_FREQ : val ;
-      val = ( val > MAX_LIGHT_FREQ ) ? MAX_LIGHT_FREQ : val ;
+      val = ( val < MIN_BRIGHTNESS) ? MIN_BRIGHTNESS : val ;
+      val = ( val > MAX_BRIGHTNESS ) ? MAX_BRIGHTNESS : val ;
       Settings.brightness = val;
+#ifdef USE_ARDUINO_JSON_LIB
       AsyncJsonResponse * resp = new AsyncJsonResponse();
-      //resp->addHeader("Server", WEB_SERVER_NAME);
+      //resp->addHeader(F("Server"), F(WEB_SERVER_NAME));
       JsonObject root = resp->getRoot();
       root["result"] = "OK";
       root["error_code"] = NO_ERRORS;
@@ -341,6 +472,9 @@ void parseCommand(AsyncWebServerRequest *request)
       root["brightness"] = Settings.brightness;
       resp->setLength();
       request->send(resp);
+#else
+      sendJsonError(request, "OK", NO_ERRORS, "No Errors",  String(Settings.brightness).c_str()); 
+#endif      
       return;
     } else if(cmnd == "reboot"){
         request->onDisconnect([]() {
@@ -351,15 +485,19 @@ void parseCommand(AsyncWebServerRequest *request)
         Command = CMD_REBOOT; //reboot request
         return;
       });
+#ifdef USE_ARDUINO_JSON_LIB
       AsyncJsonResponse * resp = new AsyncJsonResponse();
-      //resp->addHeader("Server", WEB_SERVER_NAME);
+      //resp->addHeader(F("Server"), F(WEB_SERVER_NAME));
       JsonObject root = resp->getRoot();
       root["result"] = "OK";
       root["error_code"] = NO_ERRORS;
       root["error_message"] = "No Errors";
-      root["message"] = "Rebooting...";
+      root["value"] = "Rebooting...";
       resp->setLength();
       request->send(resp);
+#else
+      sendJsonError(request, "OK", NO_ERRORS, "No Errors",  "Rebooting..."); 
+#endif
     }else {
       sendJsonError(request, "error", ERROR_INVALID_CMND, "Invalid command");
       return;
@@ -369,8 +507,9 @@ void parseCommand(AsyncWebServerRequest *request)
     sendJsonError(request, "error", ERROR_INVALID_CMND, "Command param not received");
     return;
   }
-  sendJsonError(request, "OK", NO_ERRORS, "OK");
+  sendJsonError(request, "OK", NO_ERRORS, "OK", value.c_str());
 }
+
 
 
 /**
@@ -380,15 +519,26 @@ void parseCommand(AsyncWebServerRequest *request)
  * @param err_code 
  * @param error 
  */
-void sendJsonError(AsyncWebServerRequest* request, String result, uint16_t err_code, String error_message){
+void sendJsonError(AsyncWebServerRequest* request, const char* result, uint16_t err_code, const char* error_message, const char* value){
+#ifdef USE_ARDUINO_JSON_LIB
   AsyncJsonResponse * resp = new AsyncJsonResponse();
-  //resp->addHeader("Server", WEB_SERVER_NAME);
+  //resp->addHeader(F("Server"), F(WEB_SERVER_NAME));
   JsonObject root = resp->getRoot();
   root["result"] = result;
   root["error_code"] = err_code;
   root["error_message"] = error_message;
+  root["value"] = value;
   resp->setLength();
   request->send(resp);
+#else
+  char buffer[256];
+  snprintf(buffer, sizeof(buffer), valueAnswerJsnMsg, 
+          result,
+          err_code,
+          error_message,
+          value);
+  request->send(200, F("application/json"), buffer);
+#endif
 }
 
 
@@ -449,12 +599,12 @@ bool getSettingsRequestParam(){
 
 void sendRebootingPage(){
   AsyncWebServerResponse* response = webRequest->beginResponse_P(200, FPSTR(TEXTHTML), (const uint8_t *)rebooting_html, rebooting_html_len);
-  response->addHeader("Content-Encoding", "gzip");
+  response->addHeader(F("Content-Encoding"), F("gzip"));
   webRequest->send(response);
 }
 
 void sendIndexPage(){
   AsyncWebServerResponse* response = webRequest->beginResponse_P(200, FPSTR(TEXTHTML), (const uint8_t *)index_html, index_html_len);
-  response->addHeader("Content-Encoding", "gzip");
+  response->addHeader(F("Content-Encoding"), F("gzip"));
   webRequest->send(response);
 }

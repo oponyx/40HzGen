@@ -116,7 +116,7 @@
       xhr.addEventListener("abort", firmwareUploadCanceled, false);
       xhr.open("POST", "/update");
       xhr.send(formData);
-      myTimer = setInterval(doUpdates, 300);
+      myTimer = setInterval(doUpdates, 1000);
     }
 
     function firmwareUploadProgress(evt){

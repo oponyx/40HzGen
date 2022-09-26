@@ -102,4 +102,93 @@ void dispLogoPage(){
   display.display();
 }
 
+const uint8_t main_menu_items_count = 2;
+const char* main_menu_items[] = {
+    "Info",
+    "Settings"
+};
+
+const uint8_t settings_menu_items_count = 12;
+const char* settings_menu_items[] = {
+    "wifi ssid",
+    "wifi psw",
+    "ap ssid",
+    "ap psw",
+    "light freq",
+    "on time",
+    "brightness",
+    "pwm_freq",
+    "autostart",
+    "wifiEnabled",
+    "lightEnabled",
+    "audioEnabled"
+};
+
+int8_t menu_page      = -1;
+uint8_t item_selected = 0;
+int8_t item_entered   = -1;
+bool okPressed        = false;
+bool cancelPressed    = false;
+bool upPressed        = false;
+bool downPressed      = false;
+
+void menu(){
+  if(upPressed) {
+    item_selected = item_selected - 1;
+    upPressed = false;
+  };
+  
+  if(downPressed) {
+    if (item_selected > 0){
+    item_selected = item_selected + 1;
+    downPressed = false;
+    }
+  };
+
+  if(okPressed) {
+    item_entered = item_selected;
+    okPressed = false;
+  };
+
+  if(cancelPressed) {
+    item_entered = -1;
+    cancelPressed = false;
+  };
+
+  if(item_entered == -1) { // main
+    display.clearDisplay();
+    display.setTextSize(1);             
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0,0);
+//    display.println(F("Menu"));
+//    display.println("");
+    for(int i=0;i < settings_menu_items_count; i++) {
+      if(i == item_selected) {
+        display.setTextColor(SSD1306_BLACK, SSD1306_WHITE);
+        display.println(settings_menu_items[i]);
+      } else if(i != item_selected){
+        display.setTextColor(SSD1306_WHITE);
+        display.println(settings_menu_items[i]);
+      }
+    }
+  }
+  display.display();
+
+}
+
+void menuCancelPressed(){
+  cancelPressed = true;
+}
+
+void menuOkPressed(){
+  okPressed = true;
+}
+void menuUpPressed(){
+  upPressed = true;
+}
+
+void menuDownPressed(){
+  downPressed = true;
+}
+
 #endif

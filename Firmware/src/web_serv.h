@@ -54,7 +54,7 @@ void handleSettingsPage(AsyncWebServerRequest *request);
 void handleUpdateProgress(AsyncWebServerRequest *request);
 bool getSettingsRequestParam();
 void firmwareUploadHandler(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
-void sendJsonError(AsyncWebServerRequest* request, String result, uint16_t err_code, String error_message);
+void sendJsonError(AsyncWebServerRequest* request, const char* result, uint16_t err_code, const char* error_message, const char* value = "no value");
 void parseCommand(AsyncWebServerRequest *request);
 void onCmnd(AsyncWebServerRequest * request);
 

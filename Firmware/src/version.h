@@ -1,5 +1,5 @@
 /*
-graphic.h 
+version.h 
 
 MIT License
 
@@ -24,42 +24,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifdef LCD_POPULATED
-
-#ifndef _GRAPHIC_H_
-#define _GRAPHIC_H_
-
-#include <SPI.h>
-#include <Wire.h>
-
-
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
-
-// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
-#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
-extern Adafruit_SSD1306 display;
-
-#ifndef OLED_I2C_ADRRESS
-#define OLED_I2C_ADRRESS 0x3c
-#endif
-
-
-
-bool display_init() ;
-void dispWorkingPage();
-void dispReadyPage();
-void dispInfoPage();
-void dispLogoPage();
-void menu();
-void menuCancelPressed();
-void menuOkPressed();
-void menuUpPressed();
-void menuDownPressed();
-
-#endif // _GRAPHIC_H_
-
-#endif // #ifdef LCD_POPULATED
+#define FW_VERSION "0.0.1"

@@ -147,20 +147,32 @@ void buttonShortPressed(uint8_t btnPin){
   D_PRINTLN(true, "buttonShortPressed Callback function called. Argument is:%s" , String(btnPin).c_str());
 #endif
   switch(btnPin){
-    case OK_BUTTON_PIN:    
-      if( Status == deviceStatus_t::STATUS_WORKING ){
-        Command = CMD_STOP;
-      }else{
-        Command = CMD_START;
-      }
+    case OK_BUTTON_PIN:  
+      switch (Status){
+        case deviceStatus_t::STATUS_WORKING:
+          Command = CMD_STOP;
+        break;
+        case deviceStatus_t::STATUS_IDLE:
+          Command = CMD_START;
+        break;
+        case deviceStatus_t::STATUS_MENU:
+          menuOkPressed();
+        break;
+      }  
     break;
 #ifdef CANCEL_BUTTON_PIN
     case CANCEL_BUTTON_PIN:   
       if( Status != deviceStatus_t::STATUS_WORKING ){
-        unsigned long lst_millis=millis();
 #ifdef LCD_POPULATED
-        while (millis() < lst_millis + INFO_PAGE_DISPLAY_TIME){
+        if(Status == deviceStatus_t::STATUS_MENU){ // menu is active
+          menuCancelPressed();
+        }
+        else{
           dispInfoPage();
+          unsigned long lst_millis=millis();
+          while (millis() < lst_millis + INFO_PAGE_DISPLAY_TIME){
+            ;    
+          }
         }
         dispReadyPage();
 #endif
@@ -174,7 +186,14 @@ void buttonShortPressed(uint8_t btnPin){
 void buttonLongPressed(uint8_t btnPin){
 #ifdef __DEBUG_BUTTONS__  
   D_PRINTLN(true, "buttonLongPressed Callback function called. Argument is:%s" , String(btnPin).c_str());
-#endif  
+#endif
+  switch(btnPin){
+    case CANCEL_BUTTON_PIN:
+      if(Status == deviceStatus_t::STATUS_IDLE){
+        Status = deviceStatus_t::STATUS_MENU;
+      }
+    break;
+  }
   bButtonChanged = false;
 }
 
