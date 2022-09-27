@@ -2,7 +2,7 @@
 
 :warning: **The research has not been tested and has not been proven to work on humans! Use it at your own risk!** :warning:
 
-
+#
 # 40HzGen
 An advanced [ESP8266](https://en.wikipedia.org/wiki/ESP8266) based device used to drive a 40Hz (programmable) flashing led light for brain stimulation and non invasive Alzheimer Gamma Light Therapy.
 
@@ -17,6 +17,9 @@ https://picower.mit.edu/innovations-inventions/genus
   * Complete configuration and control through web pages
   * Programmable Light On-Time, Frequence and Brightness 
   * WIFI Station and AP mode
+#
+
+# Prototype board
 
 ![alt text](https://github.com/oponyx/40HzGen/blob/master/kicad/40Hz.jpg?raw=true "Prototype PCB")
 
