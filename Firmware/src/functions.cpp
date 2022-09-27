@@ -156,7 +156,9 @@ void buttonShortPressed(uint8_t btnPin){
           Command = CMD_START;
         break;
         case deviceStatus_t::STATUS_MENU:
+#ifdef LCD_POPULATED
           menuOkPressed();
+#endif
         break;
       }  
     break;

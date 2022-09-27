@@ -263,6 +263,8 @@ void loop() {
   }
   
   if(Status == deviceStatus_t::STATUS_MENU ){
+#ifdef LCD_POPULATED
     menu();
+#endif
   }
 }
