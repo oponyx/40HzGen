@@ -15,7 +15,7 @@ https://picower.mit.edu/innovations-inventions/genus
 
 ### Features:
   * Complete configuration and control through web pages
-  * Programmable Light On-Time, Frequence and Brightness 
+  * Programmable Light On-Time, flickering Frequence and Brightness 
   * WIFI Station and AP mode
 #
 
