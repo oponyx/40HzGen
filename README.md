@@ -26,7 +26,7 @@ https://picower.mit.edu/innovations-inventions/genus
 ### Hardware notes:
  * Board designed to be fitted with 'Wemos D1 mini' or 'ESP12F' modules
  * Optional OLED SS1306 Display 
- * Power to logic from AC main (populating PS1 with a HLK-PM01 module) or direct external 5V
+ * Power to logic from AC main (populating PS1 with a HLK-PM01 module) or external 5V
  * External Input for Light Power 
  * ESP01 version (in progress)
 
