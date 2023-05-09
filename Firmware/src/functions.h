@@ -50,5 +50,8 @@ void buttonReleased(uint8_t btnPin);
 void test();
 void testButtonHandle();
 void setupIO();
-void check_flash();
+void lightPWMSetup();
+void CalculateLightPWMDutyVal();
+void audioPWMSetup();
+
 #endif

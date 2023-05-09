@@ -5,6 +5,7 @@
         "functional": "cpp",
         "random": "cpp",
         "cstdio": "cpp",
-        "array": "cpp"
+        "array": "cpp",
+        "ledc.h": "c"
     }
 }

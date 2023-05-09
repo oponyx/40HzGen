@@ -33,6 +33,4 @@ size_t m_log(bool pr_tstamp, const char *format, ...);
 #define D_PRINT(...) m_log(__VA_ARGS__)
 #define D_PRINTLN(...) m_log(__VA_ARGS__); \
         Serial.println("");
-
-
 #endif

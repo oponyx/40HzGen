@@ -23,12 +23,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#include <Arduino.h>
-#include <ESP8266WiFi.h>
-#include "wifi.h"
+
+#include "wifi_func.h"
 #include "settings.h"
 #include "globals.h"
 #include "log.h"
+#include "hw_config.h"
 
 /**
  * @brief Call this function to start the AP mode
@@ -38,7 +38,7 @@ SOFTWARE.
  */
 bool AP_setup(){
     IPAddress local_IP(192,168,16,4);
-    IPAddress gateway(192,168,16,9);
+    IPAddress gateway(192,168,16,254);
     IPAddress subnet(255,255,255,0);
 
     if(!WiFi.softAPConfig(local_IP, gateway, subnet)){
@@ -57,6 +57,9 @@ bool AP_setup(){
  * @return true if WIFI connected 
  */
 bool wifi_setup(){
+#ifdef STATUS_LED
+        pinMode(STATUS_LED, OUTPUT);
+#endif
     WiFi.begin(Settings.wifi_ssid, Settings.wifi_psw);
     for (int iRetry=0; iRetry<50; iRetry++)
     // while (WiFi.status() != WL_CONNECTED) 
@@ -64,8 +67,12 @@ bool wifi_setup(){
         if((WiFi.status() == WL_CONNECTED)){
             return true;
         }
-        delay(500);
+        delay(250);
         D_PRINT(false, ".");
+#ifdef STATUS_LED
+        digitalWrite(STATUS_LED, !digitalRead(STATUS_LED));
+#endif
+
     }
     //Serial.println("");
     return false;

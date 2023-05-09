@@ -54,7 +54,7 @@ extern deviceStatus_t Status;
 
 
 int indexvReal = 0;
-
+/*
 void check_flash(){
   // taken from ESP8266 CheckFlashConfig by Markus Sattler
 
@@ -79,7 +79,7 @@ void check_flash(){
   }
 
 }
-
+*/
 
 /**
  * @brief Setup Input and Output pins
@@ -128,12 +128,27 @@ void setupIO(){
   downButton.begin();
 #endif
 
-
-  analogWriteFreq(Settings.pwm_freq);
-  analogWriteRange(MAX_BRIGHTNESS);
+  lightPWMSetup();
+  audioPWMSetup();
 }
 
 
+void lightPWMSetup(){
+#ifdef ESP32
+ ledcSetup(LIGHT_PWM_CH, Settings.pwm_freq, LIGHT_PWM_RES_BITS);
+ ledcAttachPin(LIGHT_OUT_PIN, LIGHT_PWM_CH);
+#else
+  analogWriteFreq(Settings.pwm_freq);
+  analogWriteRange(MAX_BRIGHTNESS);
+#endif
+}
+
+void audioPWMSetup(){
+#ifdef ESP32
+ ledcSetup(AUDIO_PWM_CH, 5000, AUDIO_PWM_RES_BITS);
+ ledcAttachPin(AUDIO_OUT_PIN, AUDIO_PWM_CH);
+#endif
+}
 
 extern bool bButtonChanged;
 
@@ -245,6 +260,13 @@ void start(){
 #ifdef LCD_POPULATED
   dispWorkingPage();
 #endif
+#ifdef ESP32
+  CalculateLightPWMDutyVal();
+  if(Settings.settingFlags.audioEnabled){
+    ledcSetup(AUDIO_PWM_CH, AUDIO_FREQ, AUDIO_PWM_RES_BITS);
+    ledcAttachPin(AUDIO_OUT_PIN, AUDIO_PWM_CH);
+  }
+#endif
   D_PRINTLN(true, "Started!!");
 }
 
@@ -255,13 +277,29 @@ void start(){
 void stop(){
   Status = deviceStatus_t::STATUS_IDLE;
   rem_time = 0;
+#ifdef ESP32
+  ledcWrite(LIGHT_PWM_CH, (LIGHT_OUT_ACTIVE_LVL)  ? 0 : pow(2,LIGHT_PWM_RES_BITS)-1);
+#ifdef AUDIO_OUT_PIN
+  ledcWrite(AUDIO_PWM_CH, (AUDIO_OUT_ACTIVE_LVL)  ? 0 : pow(2,AUDIO_PWM_RES_BITS)-1);
+#endif  
+#else
   digitalWrite(LIGHT_OUT_PIN, !LIGHT_OUT_ACTIVE_LVL);
+#ifdef AUDIO_OUT_PIN
+  noTone(AUDIO_OUT_PIN);
+#endif
+#endif
   D_PRINTLN(true, "Stopped!!");
 #ifdef LCD_POPULATED
   dispReadyPage();
 #endif
 }
 
+void CalculateLightPWMDutyVal(){
+#ifdef ESP32  
+  LightPWMDutyVal = (LIGHT_OUT_ACTIVE_LVL == true) ? (uint16_t)(Settings.brightness * (pow(2,LIGHT_PWM_RES_BITS) -1) / 100) : (uint16_t)(100 - (Settings.brightness * (pow(2,LIGHT_PWM_RES_BITS) -1) / 100));
+  D_PRINTLN(true, "LightPWMDutyVal:%u", LightPWMDutyVal);
+#endif
+}
 
 /**
  * @brief Builds a Minutes and Seconds String from Seconds

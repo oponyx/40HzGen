@@ -45,4 +45,5 @@ typedef enum {
 } deviceStatus_t ;
 
 extern deviceStatus_t Status;
+extern uint16_t LightPWMDutyVal;
 #endif

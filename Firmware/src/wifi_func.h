@@ -27,7 +27,12 @@ SOFTWARE.
 #define _WIFI_H_
 
 #include <Arduino.h>
+
+#ifdef ESP32
+#include <WiFi.h>
+#else
 #include <ESP8266WiFi.h>
+#endif
 
 
 bool AP_setup();

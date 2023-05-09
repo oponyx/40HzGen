@@ -24,11 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
-/*
-python c:/Users/op/.platformio/packages/espota/espota.py -i 192.168.1.174  -f .pio/build/esp01_1m/firmware.bin  
-
-*/
 #include <Arduino.h>
 
 #include "hw_config.h"
@@ -37,7 +32,7 @@ python c:/Users/op/.platformio/packages/espota/espota.py -i 192.168.1.174  -f .p
 #include "config.h"
 #include "log.h"
 #include "settings.h"
-#include "wifi.h"
+#include "wifi_func.h"
 #include "web_serv.h"
 #include "functions.h"
 #include "error_codes.h"
@@ -51,6 +46,7 @@ bool bDisplayUpdated;         // 'Display is updated' flag
 bool bOutputStatus;
 u_long lastSwitch;
 bool bButtonChanged=false;
+uint16_t LightPWMDutyVal = 0;
 deviceStatus_t Status;
 
 Button okButton(OK_BUTTON_PIN, INPUT_PULLUP, OK_BUTT_ACTIVE_LVL);
@@ -74,10 +70,12 @@ void IRAM_ATTR buttonChangedISR(){
  * 
  */
 void setup() {
-  Status = STATUS_IDLE;
-  bHalfSecond=false;
 
+#ifdef ESP32
   Serial.begin(115200);
+#else
+  Serial.begin(74880);
+#endif
   // load settings
   D_PRINT(false, "\n");
   D_PRINTLN(true, "Serial ok");
@@ -144,7 +142,6 @@ void setup() {
     D_PRINTLN(true, "Wifi is NOT enabled!!");
   }
 
-
   D_PRINT(true, "Setting up AP...");
   if(!AP_setup()){  
     D_PRINTLN(false, "KO!!");
@@ -157,16 +154,23 @@ void setup() {
 #endif
   }
 
-
   D_PRINT(true, "Starting web server...");
   if (web_serv_setup() == NO_ERRORS) {
     D_PRINTLN(false, "OK!");
   }else{
     D_PRINTLN(true, "<<<<<<<<<<<<< ERROR!");
   }
-
   setupIO();
-  digitalWrite(LIGHT_OUT_PIN,LIGHT_OUT_ACTIVE_LVL); // test output
+  // test output
+#ifdef AUDIO_OUT_PIN
+#ifdef ESP32 
+  ledcWrite(LIGHT_PWM_CH, (LIGHT_OUT_ACTIVE_LVL)  ? pow(2,LIGHT_PWM_RES_BITS) -1 : 0);
+  ledcWriteTone(AUDIO_PWM_CH,1000);
+#else
+  tone(AUDIO_OUT_PIN,TONE_FREQ);
+  //digitalWrite(LIGHT_OUT_PIN,LIGHT_OUT_ACTIVE_LVL); 
+#endif
+#endif
 #ifdef LCD_POPULATED
   dispInfoPage();
 #endif
@@ -174,7 +178,14 @@ void setup() {
 #ifdef LCD_POPULATED
   dispReadyPage();
 #endif
-  digitalWrite(LIGHT_OUT_PIN,!LIGHT_OUT_ACTIVE_LVL); // test output end
+// test output end
+#ifdef ESP32
+  ledcWrite(LIGHT_PWM_CH, (LIGHT_OUT_ACTIVE_LVL)  ? 0 : pow(2,LIGHT_PWM_RES_BITS)-1);
+  ledcWriteTone(AUDIO_PWM_CH,0);
+#else
+  digitalWrite(LIGHT_OUT_PIN,!LIGHT_OUT_ACTIVE_LVL); 
+  noTone(AUDIO_OUT_PIN);
+#endif
   D_PRINTLN(true, "WIFI SSID:%s", Settings.wifi_ssid);
   D_PRINTLN(true, "WIFI PWD:%s", Settings.wifi_psw);
   D_PRINTLN(true, "AP SSID:%s", Settings.ap_ssid);
@@ -191,16 +202,16 @@ void setup() {
 
   if(Settings.settingFlags.autostart){
     Command = CMD_START;
-  }
-  
+  }  
   /// tests
   //check_flash();
   //D_PRINTLN(true, "Size of indexp:%d\n", sizeof(index_page));
   //test();
   //testButtonHandle();
   //system_phy_set_powerup_option(0);  // 3 to reset RF CALIBRATION
-
 }
+
+
 
 /**
  * @brief Main Loop
@@ -212,15 +223,14 @@ void loop() {
     okButton.handle();// only button handling always checked, other buttons only when not working
   }
   handleCommands();
-
   if((millis()-mills_2)>499){
     mills_2=millis();
     bHalfSecond=!bHalfSecond;
   }
   //flash status led
-  #ifdef STATUS_LED
-  digitalWrite(STATUS_LED, (bHalfSecond == true) ? STATUS_LED_ATIVE_LVL : !STATUS_LED_ATIVE_LVL );   
-  #endif
+#ifdef STATUS_LED
+  digitalWrite(STATUS_LED, (bHalfSecond == true) ? STATUS_LED_ACTIVE_LVL : !STATUS_LED_ACTIVE_LVL );   
+#endif
 
   if( Status == deviceStatus_t::STATUS_WORKING ){
     // light switch
@@ -229,19 +239,28 @@ void loop() {
     
     if( diff >= semiPeriod ){
       if(Settings.settingFlags.lightEnabled){
-      (bOutputStatus == false) ? analogWrite(LIGHT_OUT_PIN, (LIGHT_OUT_ACTIVE_LVL)  ? (int)(Settings.brightness) : 100 -(int)(Settings.brightness)) : digitalWrite(LIGHT_OUT_PIN, !LIGHT_OUT_ACTIVE_LVL);
-      //if(lightFreqErrorUs > maxLightFreqErrorUs ) maxLightFreqErrorUs = lightFreqErrorUs;
+#ifdef ESP32
+      //(bOutputStatus == false) ? ledcWrite(LIGHT_PWM_CH, (LIGHT_OUT_ACTIVE_LVL)  ? (int)(Settings.brightness) : 100 -(int)(Settings.brightness)) : ledcWrite(LIGHT_PWM_CH, (LIGHT_OUT_ACTIVE_LVL)  ? 0 : 100);
+      (bOutputStatus == true) ? ledcWrite(LIGHT_PWM_CH, LightPWMDutyVal) : ledcWrite(LIGHT_PWM_CH, (LIGHT_OUT_ACTIVE_LVL)  ? 0 :pow(2,LIGHT_PWM_RES_BITS)-1);
+#else
+        (bOutputStatus == true) ? analogWrite(LIGHT_OUT_PIN, (LIGHT_OUT_ACTIVE_LVL)  ? (int)(Settings.brightness) : 100 -(int)(Settings.brightness)) : digitalWrite(LIGHT_OUT_PIN, !LIGHT_OUT_ACTIVE_LVL);
+        //if(lightFreqErrorUs > maxLightFreqErrorUs ) maxLightFreqErrorUs = lightFreqErrorUs;
+#endif
       }
 #ifdef AUDIO_OUT_PIN
       if(Settings.settingFlags.audioEnabled){
-        digitalWrite(AUDIO_OUT_PIN, (AUDIO_OUT_ACTIVE_LVL) ? bOutputStatus : !bOutputStatus);
+#ifdef ESP32
+        (bOutputStatus) ? ledcWriteTone(AUDIO_PWM_CH,1000) : ledcWriteTone(AUDIO_PWM_CH,0);
+#else
+        (bOutputStatus) ? tone(AUDIO_OUT_PIN,TONE_FREQ) : noTone(AUDIO_OUT_PIN);
+        //digitalWrite(AUDIO_OUT_PIN, (bOutputStatus) ? bOutputStatus : !bOutputStatus);
+#endif
       }
 #endif
       lightFreqErrorUs = diff - semiPeriod;  // calculate error
       bOutputStatus = !bOutputStatus;
       lastSwitch = now ; 
     }
-
     // check for working timeout
     rem_time = (Settings.on_time * 60 - ((millis() - start_millis) / 1000)); // 14 uS
     if(rem_time<=0){
@@ -260,8 +279,7 @@ void loop() {
 #ifdef DOWN_BUTTON_PIN      
       downButton.handle();
 #endif      
-  }
-  
+  }  
   if(Status == deviceStatus_t::STATUS_MENU ){
 #ifdef LCD_POPULATED
     menu();

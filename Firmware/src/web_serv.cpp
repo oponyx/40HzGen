@@ -24,7 +24,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#ifdef ESP32
+#include <Update.h>
+#else
 #include <Updater.h>
+#endif
 #include <StreamString.h>
 
 //#define USE_ARDUINO_JSON_LIB
@@ -351,9 +355,13 @@ void firmwareUploadHandler(AsyncWebServerRequest *request, String filename, size
         ////////////////////// ArUploadHandlerFunction START  ////////////////////
   if (!index) {
       firmwareUpdateProgress = 0;
+#ifndef ESP32
       Update.runAsync(true);
       uint32_t maxSketchSize = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
       if (!Update.begin(maxSketchSize)) {
+#else
+      if (!Update.begin(UPDATE_SIZE_UNKNOWN)) {
+#endif
 #ifdef __DEBUG_40HZ_WEB__
           D_PRINTLN(true, "Update begin error:");
           Update.printError(Serial);
@@ -462,6 +470,7 @@ void parseCommand(AsyncWebServerRequest *request)
       val = ( val < MIN_BRIGHTNESS) ? MIN_BRIGHTNESS : val ;
       val = ( val > MAX_BRIGHTNESS ) ? MAX_BRIGHTNESS : val ;
       Settings.brightness = val;
+      CalculateLightPWMDutyVal();
 #ifdef USE_ARDUINO_JSON_LIB
       AsyncJsonResponse * resp = new AsyncJsonResponse();
       //resp->addHeader(F("Server"), F(WEB_SERVER_NAME));

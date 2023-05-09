@@ -29,7 +29,7 @@ SOFTWARE.
 #include "graphic.h"
 #include "functions.h"
 #include "settings.h"
-#include "wifi.h"
+#include "wifi_func.h"
 #include "config.h"
 #include "logo.h"
 
